@@ -1,0 +1,147 @@
+---
+title: "Search and Install Mods from Modrinth with JAVLI"
+sidebarTitle: "Mods"
+description: "Search Modrinth for mods, install them into a JAVLI instance with automatic dependency resolution, and manage installed mods from the command line."
+---
+
+JAVLI integrates directly with the Modrinth API to let you search, install, and manage mods entirely from the command line. All mod operations target a named JAVLI instance, and required dependencies are resolved and installed automatically unless you opt out.
+
+## How mods are stored
+
+Mods are downloaded into the `mods/` folder inside the instance's Minecraft game directory:
+
+```
+~/.javli/instances/<instance>/minecraft/mods/
+```
+
+Every file placed there is picked up by the modloader the next time you launch the instance.
+
+---
+
+## Searching for mods
+
+Search Modrinth for mods by name or keyword. Results are pulled from `https://api.modrinth.com/v2/search`.
+
+```bash
+javli mods search <query> [--minecraft <version>] [--loader <loader>] [--limit <n>]
+```
+
+| Flag | Default | Description |
+|---|---|---|
+| `--minecraft` | — | Filter to mods compatible with a specific Minecraft version |
+| `--loader` | — | Filter by modloader (e.g. `fabric`, `forge`) |
+| `--limit` | `10` | Maximum number of results to display |
+
+**Examples:**
+
+```bash
+# Search broadly
+javli mods search sodium
+
+# Narrow to a version and loader
+javli mods search sodium --minecraft 1.21.1 --loader fabric
+
+# Return more results
+javli mods search "performance" --minecraft 1.21.1 --loader fabric --limit 25
+```
+
+Each result line shows the Modrinth project ID, title, and description so you can copy the slug directly into an install command.
+
+---
+
+## Installing a mod
+
+Install a mod by its Modrinth project slug or project ID into a named instance.
+
+```bash
+javli mods install <project> --instance <name> [--minecraft <version>] [--loader <loader>] [--no-deps]
+```
+
+| Argument / Flag | Required | Description |
+|---|---|---|
+| `project` | ✅ | Modrinth project slug or ID (e.g. `sodium`) |
+| `--instance` | ✅ | Target JAVLI instance name |
+| `--minecraft` | ❌ | Override Minecraft version for version selection |
+| `--loader` | ❌ | Override modloader for version selection |
+| `--no-deps` | ❌ | Skip automatic dependency installation |
+
+**Examples:**
+
+```bash
+# Install Sodium into an instance called "survival"
+javli mods install sodium --instance survival --loader fabric
+
+# Install with explicit version pin
+javli mods install sodium --instance survival --minecraft 1.21.1 --loader fabric
+
+# Install without pulling in dependencies
+javli mods install sodium --instance survival --no-deps
+```
+
+### Version selection
+
+JAVLI fetches the version list from `https://api.modrinth.com/v2/project/<project>/version` and sorts it newest-first, preferring `release` channel files. If no release build is available it falls back to `beta`, then `alpha`.
+
+### Dependency resolution
+
+By default JAVLI inspects every `required` dependency listed in the chosen mod version and installs them recursively into the same instance. A seen-set prevents re-downloading the same version if multiple mods share a dependency.
+
+<Note>
+  Pass `--no-deps` to skip dependency resolution entirely. You are then responsible for installing any required libraries (e.g. Fabric API) manually.
+</Note>
+
+<Steps>
+  <Step title="Find the mod slug">
+    ```bash
+    javli mods search sodium --minecraft 1.21.1 --loader fabric
+    ```
+  </Step>
+  <Step title="Install the mod">
+    ```bash
+    javli mods install sodium --instance my-instance --loader fabric
+    ```
+  </Step>
+  <Step title="Verify it is listed">
+    ```bash
+    javli mods list --instance my-instance
+    ```
+  </Step>
+</Steps>
+
+---
+
+## Listing installed mods
+
+Print the filenames of every mod currently installed in an instance.
+
+```bash
+javli mods list --instance <name>
+```
+
+```bash
+javli mods list --instance survival
+# sodium-0.5.11+mc1.21.1.jar
+# fabric-api-0.100.1+1.21.1.jar
+```
+
+---
+
+## Removing a mod
+
+Remove a mod by matching a substring of its filename. All files whose name contains the given string (case-insensitive) are deleted.
+
+```bash
+javli mods remove <name> --instance <name>
+```
+
+```bash
+# Remove Sodium
+javli mods remove sodium --instance survival
+
+# Remove all files containing "api" in their name
+javli mods remove api --instance survival
+```
+
+<Warning>
+  The `remove` command matches any file whose name contains the supplied substring. Use a specific string to avoid accidentally removing multiple mods at once.
+</Warning>

@@ -1,0 +1,125 @@
+---
+title: "Install JAVLI on Windows, Linux, and macOS"
+sidebarTitle: "Installation"
+description: "Install JAVLI from a prebuilt standalone binary or from source using Python 3.10+. Binaries bundle Python — no separate install needed."
+---
+
+JAVLI can be installed in two ways: as a prebuilt standalone binary (the quickest path for most users) or directly from source using Python 3.10 or later. Either way, Java runtimes for Minecraft are managed separately by JAVLI itself — you do not need to install Java beforehand.
+
+## Option 1: Prebuilt Binaries (Recommended)
+
+Prebuilt binaries bundle Python and all required Python dependencies into a single executable. No separate Python installation is needed. Minecraft's Java runtimes are still downloaded and managed by JAVLI at runtime.
+
+Binaries are available for the following platforms on the [GitHub Releases page](https://github.com/Hampter588/JAVLI/releases):
+
+| Platform | Architecture | Filename pattern |
+|---|---|---|
+| Windows | x64 | `javli-windows-x64.exe` |
+| Windows | ARM64 | `javli-windows-arm64.exe` |
+| Linux | x64 | `javli-linux-x64` |
+| Linux | ARM64 | `javli-linux-arm64` |
+| macOS Intel | x86\_64 | `javli-macos-x64` |
+| macOS Apple Silicon | ARM64 | `javli-macos-arm64` |
+
+<Steps>
+  <Step title="Download your binary">
+    Go to [github.com/Hampter588/JAVLI/releases](https://github.com/Hampter588/JAVLI/releases) and download the artifact for your OS and architecture.
+  </Step>
+  <Step title="Make the binary executable (Linux and macOS)">
+    ```bash
+    chmod +x javli-linux-x64   # adjust filename for your platform
+    ```
+    On Windows, the `.exe` file is ready to run directly.
+  </Step>
+  <Step title="Move the binary onto your PATH (optional)">
+    Place the binary somewhere on your `PATH` so you can invoke it as `javli` from any directory. For example, on Linux or macOS:
+
+    ```bash
+    sudo mv javli-linux-x64 /usr/local/bin/javli
+    ```
+
+    On Windows, move `javli-windows-x64.exe` to a folder already on your `PATH`, or add its containing folder to `PATH` in System Settings.
+  </Step>
+  <Step title="Verify the installation">
+    ```bash
+    javli --help
+    ```
+
+    You should see the JAVLI command listing. If you did not move the binary onto your `PATH`, run it as `./javli --help` from the directory where you saved it.
+  </Step>
+</Steps>
+
+## Option 2: From Source
+
+Installing from source requires **Python 3.10 or later**. This is the recommended path for contributors and developers who want to modify or extend JAVLI.
+
+<Tabs>
+  <Tab title="PyPI (stable)">
+    Install the published package from PyPI:
+
+    ```bash
+    pip install javli-minecraft
+    ```
+
+    The `javli` command will be added to your Python environment's `bin` (or `Scripts` on Windows).
+  </Tab>
+  <Tab title="Editable / development">
+    <Steps>
+      <Step title="Clone the repository">
+        ```bash
+        git clone https://github.com/Hampter588/JAVLI
+        cd JAVLI
+        ```
+      </Step>
+      <Step title="Install in editable mode">
+        ```bash
+        pip install -e .
+        ```
+
+        The `-e` flag installs JAVLI in editable mode, so any changes you make to the source are reflected immediately without reinstalling.
+      </Step>
+      <Step title="Verify the installation">
+        ```bash
+        javli --help
+        ```
+      </Step>
+    </Steps>
+  </Tab>
+</Tabs>
+
+<Note>
+  **Python 3.10 or later is required** when installing from source. JAVLI uses structural pattern matching and other language features not available in older Python releases. The prebuilt binaries bundle their own Python and have no such requirement.
+</Note>
+
+## Nix Flake
+
+A `flake.nix` is included in the repository for Nix users. You can run JAVLI directly without installing it:
+
+```bash
+nix run github:Hampter588/JAVLI
+```
+
+Or add it as an input to your own Nix flake.
+
+## Linux Package Files
+
+Ready-to-use packaging files for common Linux package formats are available in the `packaging/` directory of the repository:
+
+| Format | Location |
+|---|---|
+| Arch Linux (PKGBUILD) | `packaging/arch/PKGBUILD` |
+| Debian (control file) | `packaging/debian/control` |
+| RPM (spec file) | `packaging/rpm/mcli.spec` |
+
+These files can be used to build native packages for your distribution. Refer to your distribution's packaging documentation for build instructions.
+
+## Next Steps
+
+After installing JAVLI, log in with your Microsoft account and launch your first game:
+
+```bash
+javli login
+javli release 1.21.1
+```
+
+See the [Quickstart guide](/quickstart) for a full walkthrough.

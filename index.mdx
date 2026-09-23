@@ -1,20 +1,84 @@
 ---
-title: "Introduction"
-description: "Welcome to your project"
+title: "JAVLI: Minecraft Command-Line Launcher"
+sidebarTitle: "Home"
+description: "JAVLI is a command-line Minecraft Java launcher. Manage versions, accounts, Java runtimes, instances, mods, and servers from a single CLI."
 ---
 
-Write a short description of your product here. What it does, who it's for, and what they can accomplish with it.
+JAVLI is a command-line launcher for Minecraft Java Edition. It handles everything from downloading game versions and managing Java runtimes to installing modloaders, syncing mods from Modrinth, and running local servers — all from your terminal, with no GUI required.
 
-<Tip>
-  Ready to make this your own? Start by editing this page. Update your `docs.json` file to customize your site. Then fill out the [Quickstart](/quickstart) page.
-</Tip>
+<CardGroup cols={2}>
+  <Card title="Installation" icon="download" href="/installation">
+    Install JAVLI from a prebuilt binary or from source using Python.
+  </Card>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Log in, install Java, and launch Minecraft in under five minutes.
+  </Card>
+  <Card title="Command Reference" icon="terminal" href="/commands/overview">
+    Every command, subcommand, and flag documented with examples.
+  </Card>
+  <Card title="Instances" icon="layer-group" href="/instances">
+    Isolated profiles with separate saves, mods, and settings.
+  </Card>
+</CardGroup>
 
-<Card title="Quickstart" icon="rocket" href="/quickstart">
-  This card links to the quickstart page in your project.
-</Card>
-<Card title="Components" icon="puzzle-piece" href="https://mintlify.com/docs/components">
-  Add cards, callouts, steps, tabs, and more to design and structure your pages.
-</Card>
-<Card title="Settings" icon="gear" href="https://mintlify.com/docs/organize/settings">
-  Set your site name, branding, and navigation in the `docs.json` file.
-</Card>
+## What JAVLI Does
+
+JAVLI brings the full Minecraft lifecycle under one command. You can launch any version from modern releases back to pre-classic builds, manage multiple Microsoft accounts, and keep Java runtimes up to date automatically.
+
+<CardGroup cols={3}>
+  <Card title="All Eras" icon="clock-rotate-left" href="/launching">
+    Release, snapshot, beta, alpha, infdev, indev, classic, and pre-classic.
+  </Card>
+  <Card title="Modloaders" icon="puzzle-piece" href="/modloaders">
+    Fabric, Quilt, Forge, and NeoForge installed in one command.
+  </Card>
+  <Card title="Modrinth" icon="cube" href="/mods">
+    Search and install mods, modpacks, resource packs, and shaders.
+  </Card>
+  <Card title="Servers" icon="server" href="/servers">
+    Create and manage vanilla and Paper servers locally.
+  </Card>
+  <Card title="Java Runtimes" icon="java" href="/java-runtimes">
+    Auto-download and manage Java 8, 17, 21, and 25 via Adoptium.
+  </Card>
+  <Card title="Historical Builds" icon="archive" href="/versions-sources">
+    Preserved Minecraft builds via the Omniarchive source.
+  </Card>
+</CardGroup>
+
+## Quick Example
+
+```bash
+# Install and log in
+pip install javli-minecraft
+javli login
+
+# Launch the latest release
+javli release 1.21.1
+
+# Launch with Fabric
+javli release 1.21.1 --fabric
+
+# Create an isolated instance
+javli instance create survival release 1.21.1
+javli instance launch survival
+```
+
+<Steps>
+  <Step title="Install JAVLI">
+    Download a prebuilt binary from GitHub Releases, or install from source with `pip install javli-minecraft`.
+  </Step>
+  <Step title="Log in with Microsoft">
+    Run `javli login`. JAVLI opens a device-code URL in your browser — enter the code to authenticate your Microsoft account.
+  </Step>
+  <Step title="Launch Minecraft">
+    Run `javli release 1.21.1` (or any version). JAVLI downloads the game, installs the required Java runtime automatically, and starts Minecraft.
+  </Step>
+  <Step title="Explore Further">
+    Create instances, install modloaders, add mods from Modrinth, or spin up a local server — all from the same `javli` CLI.
+  </Step>
+</Steps>
+
+<Note>
+  JAVLI has only been extensively tested on Windows 64-bit. It may work on other platforms but behaviour is less thoroughly validated — please [report issues](https://github.com/Hampter588/JAVLI/issues) you encounter.
+</Note>

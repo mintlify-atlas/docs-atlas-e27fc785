@@ -1,0 +1,201 @@
+---
+title: "Install Resource Packs and Shaders with JAVLI"
+sidebarTitle: "Resource Packs & Shaders"
+description: "Search, install, list, and remove Modrinth resource packs and shaders in any JAVLI instance using the resourcepack and shader subcommands."
+---
+
+JAVLI provides first-class commands for managing both resource packs and shaders sourced from Modrinth. The `resourcepack` and `shader` top-level commands share an identical subcommand structure — `search`, `install`, `list`, and `remove` — and place files in the correct game subdirectory automatically. No manual folder navigation required.
+
+## Where files are stored
+
+| Content type | Instance path |
+|---|---|
+| Resource packs | `~/.javli/instances/<instance>/minecraft/resourcepacks/` |
+| Shaders | `~/.javli/instances/<instance>/minecraft/shaderpacks/` |
+
+Both directories are picked up natively by Minecraft (and shader-capable modloaders such as Iris or Optifine) on the next game launch.
+
+---
+
+## Commands
+
+<Tabs>
+  <Tab title="Resource Packs">
+    ### Search
+
+    ```bash
+    javli resourcepack search <query> [--minecraft <version>] [--limit <n>]
+    ```
+
+    | Flag | Default | Description |
+    |---|---|---|
+    | `--minecraft` | — | Filter to packs compatible with a specific Minecraft version |
+    | `--limit` | `10` | Maximum number of results to display |
+
+    ```bash
+    javli resourcepack search "faithful"
+    javli resourcepack search "faithful" --minecraft 1.21.1 --limit 5
+    ```
+
+    ---
+
+    ### Install
+
+    ```bash
+    javli resourcepack install <project> --instance <name>
+    ```
+
+    | Argument / Flag | Required | Description |
+    |---|---|---|
+    | `project` | ✅ | Modrinth project slug or ID |
+    | `--instance` | ✅ | Target JAVLI instance name |
+
+    ```bash
+    javli resourcepack install faithful --instance survival
+    ```
+
+    JAVLI selects the newest compatible version (preferring `release`, then `beta`/`alpha`) and downloads it into `~/.javli/instances/survival/minecraft/resourcepacks/`.
+
+    ---
+
+    ### List
+
+    ```bash
+    javli resourcepack list --instance <name>
+    ```
+
+    ```bash
+    javli resourcepack list --instance survival
+    # Faithful_32x_1.21.1.zip
+    ```
+
+    ---
+
+    ### Remove
+
+    ```bash
+    javli resourcepack remove <name> --instance <name>
+    ```
+
+    Removes every file in `resourcepacks/` whose name contains the given substring (case-insensitive).
+
+    ```bash
+    javli resourcepack remove faithful --instance survival
+    # Removed Faithful_32x_1.21.1.zip
+    ```
+  </Tab>
+  <Tab title="Shaders">
+    ### Search
+
+    ```bash
+    javli shader search <query> [--minecraft <version>] [--limit <n>]
+    ```
+
+    | Flag | Default | Description |
+    |---|---|---|
+    | `--minecraft` | — | Filter to shaders compatible with a specific Minecraft version |
+    | `--limit` | `10` | Maximum number of results to display |
+
+    ```bash
+    javli shader search "complementary"
+    javli shader search "complementary" --minecraft 1.21.1 --limit 5
+    ```
+
+    ---
+
+    ### Install
+
+    ```bash
+    javli shader install <project> --instance <name>
+    ```
+
+    | Argument / Flag | Required | Description |
+    |---|---|---|
+    | `project` | ✅ | Modrinth project slug or ID |
+    | `--instance` | ✅ | Target JAVLI instance name |
+
+    ```bash
+    javli shader install complementary-reimagined --instance survival
+    ```
+
+    The shader archive is downloaded into `~/.javli/instances/survival/minecraft/shaderpacks/`.
+
+    ---
+
+    ### List
+
+    ```bash
+    javli shader list --instance <name>
+    ```
+
+    ```bash
+    javli shader list --instance survival
+    # ComplementaryReimagined_r5.3.zip
+    ```
+
+    ---
+
+    ### Remove
+
+    ```bash
+    javli shader remove <name> --instance <name>
+    ```
+
+    Removes every file in `shaderpacks/` whose name contains the given substring (case-insensitive).
+
+    ```bash
+    javli shader remove complementary --instance survival
+    # Removed ComplementaryReimagined_r5.3.zip
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## End-to-end example
+
+The steps below add a resource pack and a shader pack to the same instance.
+
+<Steps>
+  <Step title="Create (or confirm) your instance">
+    ```bash
+    javli instance create my-instance release 1.21.1
+    ```
+  </Step>
+  <Step title="Find a resource pack">
+    ```bash
+    javli resourcepack search "faithful" --minecraft 1.21.1
+    ```
+  </Step>
+  <Step title="Install the resource pack">
+    ```bash
+    javli resourcepack install faithful --instance my-instance
+    ```
+  </Step>
+  <Step title="Find a shader pack">
+    ```bash
+    javli shader search "complementary" --minecraft 1.21.1
+    ```
+  </Step>
+  <Step title="Install the shader pack">
+    ```bash
+    javli shader install complementary-reimagined --instance my-instance
+    ```
+  </Step>
+  <Step title="Confirm both are installed">
+    ```bash
+    javli resourcepack list --instance my-instance
+    javli shader list --instance my-instance
+    ```
+  </Step>
+</Steps>
+
+<Note>
+  Shaders require a compatible modloader and shader mod to be active in-game (for example [Iris Shaders](https://modrinth.com/mod/iris) on Fabric, or OptiFine on Forge). JAVLI places the shader files in the right location, but the in-game shader loader must be installed separately via `javli mods install`.
+</Note>
+
+---
+
+## Source
+
+All resource packs and shaders are sourced from the Modrinth API at `https://api.modrinth.com/v2`. Version selection follows the same logic used for mods: the newest listed release is preferred, with beta and alpha as fallbacks.

@@ -1,0 +1,294 @@
+---
+title: "javli server — Server Management Commands"
+sidebarTitle: "server"
+description: "Manage local Minecraft servers with javli server. Create vanilla or Paper servers, control lifecycle, accept EULA, and edit server.properties from the CLI."
+---
+
+The `javli server` command lets you create and manage local Minecraft Java servers without leaving the terminal. JAVLI supports both the official vanilla server jar and the Paper high-performance server. It handles downloading the server artifact, managing a PID file for background process tracking, and reading or writing `server.properties` key-value pairs directly from the CLI. Server data is stored under `~/.javli/servers/<name>/`.
+
+<Warning>
+  JAVLI never accepts Mojang's EULA automatically. After creating a server you must run `javli server eula <name>` before the server will start.
+</Warning>
+
+---
+
+## javli server create
+
+Download the server artifact and create a new named server entry.
+
+### Syntax
+
+```bash
+javli server create <name> <version> [--kind vanilla|paper] [--memory <size>]
+```
+
+### Examples
+
+```bash
+# Create a vanilla server on 1.21.1 with default memory
+javli server create smp 1.21.1
+
+# Create a Paper server with 4 GB of RAM
+javli server create paper-smp 1.21.1 --kind paper --memory 4G
+
+# Create a lightweight vanilla server with 1 GB of RAM
+javli server create classic-smp 1.20.4 --memory 1G
+```
+
+### Arguments and flags
+
+<ParamField path="name" type="string" required>
+  A unique name for this server, used in all other `javli server` subcommands.
+</ParamField>
+
+<ParamField path="version" type="string" required>
+  The Minecraft version for the server (e.g. `1.21.1`, `1.20.4`).
+</ParamField>
+
+<ParamField query="--kind" type="string" default="vanilla">
+  The server software to use. Must be one of:
+
+  - `vanilla` — the official Mojang server jar (default)
+  - `paper` — the Paper high-performance server
+</ParamField>
+
+<ParamField query="--memory" type="string" default="2G">
+  JVM heap size passed to the server process as both `-Xms` and `-Xmx`. Accepts standard JVM size notation: `512M`, `2G`, `4G`, etc.
+</ParamField>
+
+<Note>
+  After `server create` completes, JAVLI prints a reminder to accept the EULA. The server will refuse to start until you run `javli server eula <name>`.
+</Note>
+
+---
+
+## javli server list
+
+List all managed servers along with their running status, kind, and Minecraft version.
+
+### Syntax
+
+```bash
+javli server list
+```
+
+### Example output
+
+```
+RUNNING  smp                vanilla  1.21.1
+STOPPED  paper-smp          paper    1.21.1
+STOPPED  classic-smp        vanilla  1.20.4
+```
+
+---
+
+## javli server start
+
+Start a managed server. By default the server runs as a background process; pass `--foreground` to attach the current terminal to the server process.
+
+### Syntax
+
+```bash
+javli server start <name> [--foreground]
+```
+
+### Examples
+
+```bash
+# Start the server in the background
+javli server start smp
+
+# Start the server and attach to its output
+javli server start smp --foreground
+```
+
+### Arguments and flags
+
+<ParamField path="name" type="string" required>
+  The name of the server to start.
+</ParamField>
+
+<ParamField query="--foreground" type="boolean">
+  Run the server in the foreground, attaching stdout and stderr to the current terminal session. The process will stop if the terminal is closed.
+</ParamField>
+
+---
+
+## javli server stop
+
+Send a stop signal to a running server.
+
+### Syntax
+
+```bash
+javli server stop <name>
+```
+
+### Arguments
+
+<ParamField path="name" type="string" required>
+  The name of the server to stop.
+</ParamField>
+
+### Example
+
+```bash
+javli server stop smp
+```
+
+---
+
+## javli server status
+
+Print whether a server is currently running or stopped, along with its PID if running.
+
+### Syntax
+
+```bash
+javli server status <name>
+```
+
+### Arguments
+
+<ParamField path="name" type="string" required>
+  The name of the server to check.
+</ParamField>
+
+### Example
+
+```bash
+javli server status smp
+# Output: RUNNING 12345
+```
+
+---
+
+## javli server eula
+
+Mark the Mojang EULA as accepted for a server. This writes `eula=true` into the server's `eula.txt` file. The server will not start without this.
+
+### Syntax
+
+```bash
+javli server eula <name>
+```
+
+### Arguments
+
+<ParamField path="name" type="string" required>
+  The name of the server for which to accept the EULA.
+</ParamField>
+
+### Example
+
+```bash
+javli server eula smp
+```
+
+<Warning>
+  By running `javli server eula`, you confirm that you have read and agreed to Mojang's End User License Agreement at [minecraft.net/en-us/eula](https://www.minecraft.net/en-us/eula). JAVLI cannot accept the EULA on your behalf.
+</Warning>
+
+---
+
+## javli server delete
+
+Remove a managed server. By default this deletes both the JAVLI registry entry and the server's directory on disk.
+
+### Syntax
+
+```bash
+javli server delete <name> [--keep-files]
+```
+
+### Arguments and flags
+
+<ParamField path="name" type="string" required>
+  The name of the server to delete.
+</ParamField>
+
+<ParamField query="--keep-files" type="boolean">
+  Remove the server from JAVLI's registry but leave its directory on disk. Use this to preserve world data before permanently deleting the entry.
+</ParamField>
+
+### Example
+
+```bash
+# Delete the server and its files
+javli server delete old-smp
+
+# Unregister only, keep files
+javli server delete old-smp --keep-files
+```
+
+---
+
+## javli server get
+
+Read a single key from the server's `server.properties` file and print its value.
+
+### Syntax
+
+```bash
+javli server get <name> <key>
+```
+
+### Arguments
+
+<ParamField path="name" type="string" required>
+  The name of the server.
+</ParamField>
+
+<ParamField path="key" type="string" required>
+  The `server.properties` key to read (e.g. `max-players`, `level-name`, `difficulty`).
+</ParamField>
+
+### Example
+
+```bash
+javli server get smp max-players
+# Output: 20
+```
+
+---
+
+## javli server set
+
+Write a key-value pair into the server's `server.properties` file.
+
+### Syntax
+
+```bash
+javli server set <name> <key> <value>
+```
+
+### Arguments
+
+<ParamField path="name" type="string" required>
+  The name of the server.
+</ParamField>
+
+<ParamField path="key" type="string" required>
+  The `server.properties` key to set (e.g. `max-players`, `difficulty`, `motd`).
+</ParamField>
+
+<ParamField path="value" type="string" required>
+  The new value for the key.
+</ParamField>
+
+### Example
+
+```bash
+# Set max players to 10
+javli server set smp max-players 10
+
+# Change the MOTD
+javli server set smp motd "Welcome to my server"
+
+# Set difficulty to hard
+javli server set smp difficulty hard
+```
+
+<Tip>
+  Changes made with `javli server set` take effect the next time the server starts. If the server is currently running, stop and restart it for the new values to apply.
+</Tip>

@@ -1,0 +1,284 @@
+---
+title: "Run Minecraft Servers with JAVLI"
+sidebarTitle: "Servers"
+description: "Create, start, stop, and manage vanilla and Paper Minecraft servers locally. JAVLI handles server JARs, EULA, Java selection, and process management."
+---
+
+JAVLI can provision and manage Minecraft Java Edition servers directly from your terminal. It downloads the correct server JAR, sets up the directory layout, resolves the right Java runtime, and tracks process state — all under `~/.javli/servers/`. Both Mojang vanilla servers and PaperMC servers are supported, and every server gets its own isolated directory so you can run multiple versions side-by-side.
+
+## Server storage layout
+
+Each server lives under `~/.javli/servers/<name>/` and contains the following files after creation and first start:
+
+| File | Purpose |
+|---|---|
+| `server.jar` | Downloaded server JAR (Mojang or PaperMC) |
+| `eula.txt` | Mojang EULA acceptance flag |
+| `server.properties` | Minecraft server configuration |
+| `server.log` | Appended stdout/stderr from background runs |
+
+---
+
+## Creating a server
+
+Use `javli server create` to download a server JAR and create the directory layout. You must provide a unique name and a Minecraft version string.
+
+```bash
+javli server create <name> <version> [--kind vanilla|paper] [--memory <size>]
+```
+
+| Flag | Default | Description |
+|---|---|---|
+| `--kind` | `vanilla` | Server software. `vanilla` downloads the official Mojang server JAR; `paper` downloads the latest stable PaperMC build for that version. |
+| `--memory` | `2G` | Java heap size passed as both `-Xms` and `-Xmx`. Accepts standard JVM notation: `4G`, `512M`, etc. |
+
+**Examples:**
+
+```bash
+# Vanilla server with defaults (2 GB heap)
+javli server create smp 1.21.1
+
+# PaperMC server with 4 GB heap
+javli server create paper-smp 1.21.1 --kind paper --memory 4G
+
+# Vanilla 1.20.4 with 512 MB heap (testing / low-memory machine)
+javli server create test-server 1.20.4 --memory 512M
+```
+
+<Note>
+  PaperMC builds are fetched from the **PaperMC Fill API** at `https://fill.papermc.io/v3`. JAVLI selects the newest stable build for the requested Minecraft version. If no stable build exists for that version, the newest available build is used instead.
+</Note>
+
+---
+
+## Accepting the EULA
+
+After creating a server, you **must** accept Mojang's End User Licence Agreement before JAVLI will allow you to start it. Running `javli server create` deliberately leaves `eula.txt` set to `eula=false` and prints a reminder.
+
+```bash
+javli server eula <name>
+```
+
+This command writes `eula=true` to `~/.javli/servers/<name>/eula.txt`. JAVLI requires this explicit step rather than accepting the EULA on your behalf because the agreement is a legal contract between you and Mojang. By running the command you confirm you have read and accepted the [Minecraft EULA](https://www.minecraft.net/en-us/eula). Attempting to start a server before accepting the EULA will produce an error.
+
+```bash
+javli server eula smp
+# EULA marked accepted for smp
+```
+
+---
+
+## Starting a server
+
+```bash
+javli server start <name> [--foreground]
+```
+
+By default, JAVLI starts the server as a background process. Its PID is saved to the server record and its output is appended to `server.log`. Pass `--foreground` to keep the process attached to your terminal — useful for debugging startup issues or watching the console live.
+
+```bash
+# Start in background (default)
+javli server start smp
+# Started smp (PID 38291)
+
+# Start in foreground — Ctrl-C to detach/stop
+javli server start smp --foreground
+```
+
+JAVLI automatically selects the Java runtime required by that Minecraft version. See the `javli java` command group if you need to manage runtimes manually.
+
+---
+
+## Stopping a server
+
+```bash
+javli server stop <name>
+```
+
+Sends `SIGTERM` to the server process group on Unix, or uses `taskkill /T /F` on Windows. The PID is cleared from the server record after a successful stop.
+
+```bash
+javli server stop smp
+# Stopped.
+```
+
+If the server is not running when you call `stop`, JAVLI prints `Server was not running.` and cleans up any stale PID entry — it does not error out.
+
+---
+
+## Checking server status
+
+```bash
+javli server status <name>
+```
+
+Prints `RUNNING <pid>` or `STOPPED` for the named server.
+
+```bash
+javli server status smp
+# RUNNING 38291
+```
+
+---
+
+## Listing all servers
+
+```bash
+javli server list
+```
+
+Prints a table of every managed server with its current status, name, kind, and Minecraft version:
+
+```
+RUNNING  smp                vanilla  1.21.1
+STOPPED  paper-smp          paper    1.21.1
+STOPPED  test-server        vanilla  1.20.4
+```
+
+---
+
+## Reading and writing server properties
+
+JAVLI can read and write individual keys in `server.properties` without opening the file manually.
+
+### Read a key
+
+```bash
+javli server get <name> <key>
+```
+
+```bash
+javli server get smp difficulty
+# normal
+
+javli server get smp max-players
+# 20
+```
+
+### Write a key
+
+```bash
+javli server set <name> <key> <value>
+```
+
+```bash
+javli server set smp difficulty hard
+# difficulty=hard
+
+javli server set smp max-players 10
+# max-players=10
+```
+
+Changes take effect the next time the server is started (or on a live reload if the server supports it).
+
+---
+
+## Deleting a server
+
+```bash
+javli server delete <name> [--keep-files]
+```
+
+Removes the server from JAVLI's index and, by default, deletes the entire server directory including all world data. Pass `--keep-files` to deregister the server from JAVLI while leaving `~/.javli/servers/<name>/` on disk.
+
+```bash
+# Remove everything
+javli server delete test-server
+
+# Deregister but preserve world data
+javli server delete test-server --keep-files
+```
+
+<Warning>
+  You must stop a server before deleting it. If the server process is still running, `javli server delete` will refuse with an error: `Stop the server before deleting it.` Run `javli server stop <name>` first.
+</Warning>
+
+---
+
+## Full workflow example
+
+The steps below walk through creating a Paper server, accepting the EULA, starting it in the background, confirming it is running, and then stopping it cleanly.
+
+<Steps>
+  <Step title="Create the server">
+    Download the PaperMC 1.21.1 server JAR and set up the server directory with a 4 GB heap.
+
+    ```bash
+    javli server create paper-smp 1.21.1 --kind paper --memory 4G
+    ```
+
+    JAVLI prints the server path and reminds you to accept the EULA before starting:
+
+    ```
+    Created paper server paper-smp (1.21.1)
+    /home/user/.javli/servers/paper-smp
+    EULA is NOT accepted automatically. After reading it, run:
+      javli server eula paper-smp
+    ```
+  </Step>
+
+  <Step title="Accept the EULA">
+    Read the [Minecraft EULA](https://www.minecraft.net/en-us/eula), then mark it accepted.
+
+    ```bash
+    javli server eula paper-smp
+    # EULA marked accepted for paper-smp
+    ```
+  </Step>
+
+  <Step title="Start the server">
+    Start the server in the background. JAVLI resolves the correct Java runtime and launches the process.
+
+    ```bash
+    javli server start paper-smp
+    # Started paper-smp (PID 41092)
+    ```
+
+    Server output is written to `~/.javli/servers/paper-smp/server.log`.
+  </Step>
+
+  <Step title="Check the status">
+    Confirm the server is running and note its PID.
+
+    ```bash
+    javli server status paper-smp
+    # RUNNING 41092
+    ```
+
+    You can also see it alongside all other servers:
+
+    ```bash
+    javli server list
+    # RUNNING  paper-smp          paper    1.21.1
+    ```
+  </Step>
+
+  <Step title="Stop the server">
+    Gracefully stop the server when you are done.
+
+    ```bash
+    javli server stop paper-smp
+    # Stopped.
+    ```
+  </Step>
+</Steps>
+
+---
+
+## Reference: all server subcommands
+
+<Accordion title="Command quick reference">
+
+| Command | Description |
+|---|---|
+| `javli server create <name> <version> [--kind vanilla\|paper] [--memory <size>]` | Create and download a new server |
+| `javli server eula <name>` | Accept the Mojang EULA for a server |
+| `javli server start <name> [--foreground]` | Start a server (background by default) |
+| `javli server stop <name>` | Stop a running server |
+| `javli server status <name>` | Show RUNNING/STOPPED and PID |
+| `javli server list` | List all servers with status, kind, and version |
+| `javli server get <name> <key>` | Read a key from `server.properties` |
+| `javli server set <name> <key> <value>` | Write a key to `server.properties` |
+| `javli server delete <name> [--keep-files]` | Delete a server (optionally preserve files) |
+
+</Accordion>

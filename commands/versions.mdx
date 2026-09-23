@@ -1,0 +1,258 @@
+---
+title: "javli versions / search / info — Version Commands"
+sidebarTitle: "versions"
+description: "Discover and inspect Minecraft versions with JAVLI. List by era, search by ID, and get detailed metadata including Java requirements and download links."
+---
+
+JAVLI's version discovery commands let you browse, search, and inspect the full Minecraft version catalog sourced from Mojang and Omniarchive. Use `javli versions` to list and filter the catalog, `javli search` to find a specific version by keyword, `javli info` to get detailed JSON metadata for one version, `javli stats` to see version counts by era and source, and `javli update` to upgrade the JAVLI binary itself.
+
+---
+
+## javli versions
+
+List Minecraft versions from the catalog. Results are printed in a table sorted by release date, newest first. You can filter by source, era, whether historical versions are included, and a text query.
+
+### Syntax
+
+```bash
+javli versions [--source auto|mojang|omniarchive] [--type <era>] [--historical] [--query <text>] [--limit <n>]
+```
+
+### Examples
+
+```bash
+# List all versions
+javli versions
+
+# List all Beta-era versions
+javli versions --type beta
+
+# List versions from Omniarchive only
+javli versions --source omniarchive
+
+# Include historical/archived versions in the output
+javli versions --historical
+
+# Search within the version list for "1.7"
+javli versions --query "1.7"
+
+# Limit output to 10 results
+javli versions --limit 10
+
+# Combine filters
+javli versions --source omniarchive --type classic --historical
+```
+
+### Example output
+
+```
+VERSION                      ERA          SOURCE       RELEASED
+------------------------------------------------------------------------------
+1.21.1                       release      mojang       2024-08-08T13:19:46+00:00
+1.21                         release      mojang       2024-06-13T12:43:57+00:00
+b1.7.3                       beta         mojang       2011-07-08T15:00:00+00:00
+c0.30                        classic      omniarchive  -
+
+3 version(s)
+```
+
+### Arguments and flags
+
+<ParamField query="--source" type="string" default="auto">
+  Which version catalog to query.
+
+  - `auto` — merge results from both Mojang and Omniarchive (default)
+  - `mojang` — Mojang official version manifest only
+  - `omniarchive` — Omniarchive historical archive only
+</ParamField>
+
+<ParamField query="--type" type="string">
+  Filter the results to a single era. Must be one of: `release`, `snapshot`, `beta`, `alpha`, `infdev`, `indev`, `classic`, `preclassic`.
+</ParamField>
+
+<ParamField query="--historical" type="boolean">
+  Include archived and historical versions that are normally excluded from the default listing.
+</ParamField>
+
+<ParamField query="--query" type="string">
+  Only show versions whose ID contains this text (case-insensitive substring match).
+</ParamField>
+
+<ParamField query="--limit" type="integer">
+  Cap the number of rows printed. If omitted, all matching versions are shown.
+</ParamField>
+
+---
+
+## javli search
+
+Search the version catalog by a keyword or partial ID. Results are ranked by match quality — exact ID matches appear first, then prefix matches, then substring matches.
+
+### Syntax
+
+```bash
+javli search <query> [--source auto|mojang|omniarchive] [--type <era>] [--limit <n>]
+```
+
+### Examples
+
+```bash
+# Search for all versions containing "1.7"
+javli search "1.7"
+
+# Search for Beta builds only
+javli search "b1" --type beta
+
+# Limit to 5 results
+javli search "snapshot" --limit 5
+```
+
+### Arguments and flags
+
+<ParamField path="query" type="string" required>
+  The keyword or partial version ID to search for.
+</ParamField>
+
+<ParamField query="--source" type="string" default="auto">
+  Version catalog source: `auto`, `mojang`, or `omniarchive`.
+</ParamField>
+
+<ParamField query="--type" type="string">
+  Restrict search to a specific era: `release`, `snapshot`, `beta`, `alpha`, `infdev`, `indev`, `classic`, `preclassic`.
+</ParamField>
+
+<ParamField query="--limit" type="integer" default="25">
+  Maximum number of search results to display.
+</ParamField>
+
+---
+
+## javli info
+
+Fetch and display detailed metadata for a single Minecraft version as formatted JSON. This is the primary way to inspect a version's Java requirement, asset index, main class, and available download artifacts.
+
+### Syntax
+
+```bash
+javli info <version> [--source auto|mojang|omniarchive]
+```
+
+### Examples
+
+```bash
+javli info 1.21.1
+javli info b1.7.3 --source mojang
+javli info c0.30 --source omniarchive
+```
+
+### Arguments and flags
+
+<ParamField path="version" type="string" required>
+  The exact Minecraft version ID to look up.
+</ParamField>
+
+<ParamField query="--source" type="string" default="auto">
+  Version catalog source: `auto`, `mojang`, or `omniarchive`.
+</ParamField>
+
+### JSON output fields
+
+The command prints a JSON object with the following fields:
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | string | The canonical version ID (e.g. `1.21.1`) |
+| `type` | string | Era/type normalized to JAVLI names (e.g. `release`, `beta`) |
+| `source` | string | Where this version was resolved from: `mojang` or `omniarchive` |
+| `release_time` | string \| null | ISO 8601 release timestamp, or `null` if unavailable |
+| `metadata_url` | string | URL to the raw version metadata JSON |
+| `java` | integer \| null | Required Java major version (e.g. `21`), or `null` for very old builds |
+| `main_class` | string \| null | JVM main class used to start this version |
+| `asset_index` | string \| null | Asset index ID used for this version's game assets |
+| `library_count` | integer | Number of library entries in the version's library list |
+| `downloads` | array | List of available download artifact keys (e.g. `["client", "server"]`) |
+
+### Example output
+
+```json
+{
+  "id": "1.21.1",
+  "type": "release",
+  "source": "mojang",
+  "release_time": "2024-08-08T13:19:46+00:00",
+  "metadata_url": "https://piston-meta.mojang.com/v1/packages/.../1.21.1.json",
+  "java": 21,
+  "main_class": "net.minecraft.client.main.Main",
+  "asset_index": "17",
+  "library_count": 48,
+  "downloads": ["client", "client_mappings", "server", "server_mappings"]
+}
+```
+
+---
+
+## javli stats
+
+Print a summary of how many versions are in the catalog, broken down by source and by era.
+
+### Syntax
+
+```bash
+javli stats [--source auto|mojang|omniarchive]
+```
+
+### Examples
+
+```bash
+# Stats across all sources
+javli stats
+
+# Stats for Omniarchive only
+javli stats --source omniarchive
+```
+
+### Arguments and flags
+
+<ParamField query="--source" type="string" default="auto">
+  Version catalog source to gather statistics from: `auto`, `mojang`, or `omniarchive`.
+</ParamField>
+
+### Example output
+
+```
+Total: 847
+By source:
+  mojang         650
+  omniarchive    197
+By era:
+  alpha           77
+  beta            36
+  classic         93
+  infdev          14
+  indev            7
+  preclassic       8
+  release        423
+  snapshot       189
+```
+
+---
+
+## javli update
+
+Update the JAVLI standalone binary by downloading the latest release from GitHub Releases. This command only applies when running JAVLI as a packaged executable, not when running from source.
+
+### Syntax
+
+```bash
+javli update
+```
+
+### Example
+
+```bash
+javli update
+```
+
+<Note>
+  `javli update` downloads a replacement binary from GitHub Releases and replaces the currently running executable in place. If you installed JAVLI from source with `pip install -e .`, update via `git pull` instead.
+</Note>

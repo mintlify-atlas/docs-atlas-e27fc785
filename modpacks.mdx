@@ -1,0 +1,117 @@
+---
+title: "Install Modrinth Modpacks with JAVLI"
+sidebarTitle: "Modpacks"
+description: "Install Modrinth .mrpack modpacks into a JAVLI instance. JAVLI extracts overrides and downloads all listed files automatically."
+---
+
+JAVLI can install any Modrinth modpack in the `.mrpack` format directly from the command line. After pointing it at a project slug, JAVLI downloads the pack, extracts overrides, and fetches every listed file — no manual unzipping or file-copying required. The only prerequisite is that the target instance already exists.
+
+## Before you begin
+
+A JAVLI instance must exist before you can install a modpack into it. Create one with `javli instance create` using the Minecraft version and era expected by the pack:
+
+```bash
+javli instance create <name> release <minecraft-version>
+```
+
+---
+
+## Searching for modpacks
+
+Search Modrinth for modpacks by name or keyword.
+
+```bash
+javli modpack search <query> [--minecraft <version>] [--loader <loader>] [--limit <n>]
+```
+
+| Flag | Default | Description |
+|---|---|---|
+| `--minecraft` | — | Filter to packs compatible with a specific Minecraft version |
+| `--loader` | — | Filter by modloader (e.g. `fabric`, `forge`) |
+| `--limit` | `10` | Maximum number of results to display |
+
+**Examples:**
+
+```bash
+javli modpack search "fabulously optimized"
+javli modpack search "all the mods" --minecraft 1.21.1 --loader forge --limit 5
+```
+
+Each result shows the Modrinth project ID, title, and description. Copy the project slug for use in the install command.
+
+---
+
+## Installing a modpack
+
+```bash
+javli modpack install <project> --instance <name>
+```
+
+| Argument / Flag | Required | Description |
+|---|---|---|
+| `project` | ✅ | Modrinth project slug or ID (e.g. `fabulously-optimized`) |
+| `--instance` | ✅ | Name of an existing JAVLI instance to install into |
+
+<Warning>
+  The instance must already exist. Run `javli instance create` first. If the instance does not exist, the command will error out before any files are downloaded.
+</Warning>
+
+---
+
+## What the install command does
+
+<Steps>
+  <Step title="Select and download the .mrpack file">
+    JAVLI queries the Modrinth API for the newest compatible version of the project and downloads the `.mrpack` archive into a temporary directory inside the instance folder. Only `.mrpack` files are accepted — any other format will raise an error.
+  </Step>
+  <Step title="Parse modrinth.index.json">
+    The archive is opened as a ZIP and `modrinth.index.json` is read to obtain the pack name, declared Minecraft version, and the list of files to download.
+  </Step>
+  <Step title="Copy overrides">
+    Files under `overrides/` and `client-overrides/` in the archive are extracted and copied directly into the instance's `minecraft/` game directory, preserving their internal directory structure (e.g. `overrides/config/mod.toml` → `minecraft/config/mod.toml`).
+  </Step>
+  <Step title="Download listed files">
+    Every entry in the `files` array of `modrinth.index.json` that is supported on the client side is downloaded from its Modrinth CDN URL and placed at the path specified in the `path` field, relative to the `minecraft/` directory.
+  </Step>
+  <Step title="Clean up">
+    The temporary download directory is removed, leaving only the installed files in the instance.
+  </Step>
+</Steps>
+
+---
+
+## Full example — Fabulously Optimized
+
+The following walkthrough installs the popular performance-focused modpack [Fabulously Optimized](https://modrinth.com/modpack/fabulously-optimized) into a fresh instance.
+
+```bash
+# 1. Create the instance targeting the pack's Minecraft version
+javli instance create fo-instance release 1.21.1
+
+# 2. Confirm the project slug
+javli modpack search "fabulously optimized"
+
+# 3. Install the modpack
+javli modpack install fabulously-optimized --instance fo-instance
+```
+
+On success, JAVLI prints the pack name and the Minecraft version recorded in `modrinth.index.json`:
+
+```
+Installed modpack: Fabulously Optimized
+Minecraft: 1.21.1
+```
+
+You can then launch the instance as usual:
+
+```bash
+javli instance launch fo-instance
+```
+
+---
+
+## Supported formats
+
+<Note>
+  Only the Modrinth **`.mrpack`** format is supported. CurseForge `.zip` modpacks and other formats are not handled.
+</Note>

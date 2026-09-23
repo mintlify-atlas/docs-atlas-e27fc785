@@ -1,0 +1,156 @@
+---
+title: "Java Runtime Management in JAVLI"
+sidebarTitle: "Java Runtimes"
+description: "JAVLI auto-installs the correct Java version for each Minecraft version via Eclipse Adoptium. Manage runtimes with javli java list, install, and path."
+---
+
+JAVLI manages its own Java runtimes so you never need to manually install or switch JDKs when jumping between Minecraft versions. When a launch requires a Java version you don't have, JAVLI downloads and unpacks a JRE from the Eclipse Adoptium API, stores it under `~/.javli/runtimes/`, and uses it automatically from that point forward. You can also inspect, pre-install, or override runtimes at any time using the `javli java` subcommands.
+
+## Supported Java Versions
+
+JAVLI can manage the following Java major versions via Eclipse Adoptium:
+
+| Major | Typical use |
+|-------|------------|
+| 8 | Legacy versions (Classic, Indev, Infdev, early Alpha/Beta, and anything without explicit Mojang metadata) |
+| 17 | Minecraft 1.17 – 1.20.4 |
+| 21 | Minecraft 1.20.5 – 1.21.x |
+| 25 | Future / bleeding-edge releases |
+
+The correct version is determined automatically from Mojang's version metadata (`javaVersion.majorVersion` field). For historical versions that lack this metadata, JAVLI defaults to Java 8.
+
+## Runtime Storage
+
+Managed runtimes are stored at:
+
+```text
+~/.javli/runtimes/java-<major>/
+```
+
+For example:
+
+```text
+~/.javli/runtimes/java-8/
+~/.javli/runtimes/java-21/
+```
+
+Each directory is a self-contained JRE — nothing is added to your system `PATH`.
+
+## Platform Detection
+
+When downloading from [Eclipse Adoptium](https://api.adoptium.net/v3), JAVLI automatically selects the right binary for your platform:
+
+| Dimension | Detected values |
+|-----------|----------------|
+| **OS** | `windows`, `linux`, `mac` |
+| **Architecture** | `x64` (amd64/x86\_64), `aarch64` (Apple Silicon / ARM), `x86` (32-bit) |
+
+JAVLI first tries to download a JRE image. If no JRE is published for your platform and major version, it falls back to a JDK image automatically.
+
+## Listing Installed Runtimes
+
+```bash
+javli java list
+```
+
+This shows both your system Java (detected via `which java`) and every managed runtime JAVLI has installed:
+
+```text
+system  Java 21  /usr/bin/java
+managed java-8        /home/user/.javli/runtimes/java-8/bin/java
+managed java-21       /home/user/.javli/runtimes/java-21/bin/java
+```
+
+## Installing a Runtime
+
+```bash
+# Install a specific major version
+javli java install 21
+
+# Re-install (overwrite) an existing managed runtime
+javli java install 21 --force
+```
+
+`javli java install` accepts one of the supported majors: `8`, `17`, `21`, or `25`. If the runtime is already present, the command is a no-op unless `--force` is passed.
+
+## Printing the Path to a Runtime
+
+```bash
+# Print the full path to the java executable for a given major
+javli java path 21
+```
+
+```text
+/home/user/.javli/runtimes/java-21/bin/java
+```
+
+This is useful for scripts or for pointing other tools at JAVLI's managed runtime. If the requested major is not installed, the command exits with an error.
+
+## Java Resolution Order
+
+When JAVLI needs a Java executable for a launch, it checks in this order:
+
+<Steps>
+  <Step title="Environment variable override">
+    If `MCLI_JAVA` (modern) or `MCLI_LEGACY_JAVA` (legacy/historical) is set and points to an existing file, that executable is used unconditionally.
+  </Step>
+  <Step title="Managed runtime">
+    If a managed runtime matching the required major version exists under `~/.javli/runtimes/java-<major>/`, JAVLI uses it.
+  </Step>
+  <Step title="System Java">
+    If the system `java` on `$PATH` reports the same major version, JAVLI uses it.
+  </Step>
+  <Step title="Auto-install">
+    If none of the above match, JAVLI downloads the correct version from Eclipse Adoptium, installs it to `~/.javli/runtimes/java-<major>/`, and uses it immediately.
+  </Step>
+</Steps>
+
+## Environment Variable Overrides
+
+You can bypass JAVLI's automatic resolution entirely by setting environment variables:
+
+```bash
+# Override Java for modern Minecraft versions
+export MCLI_JAVA=/opt/my-jdk/bin/java
+javli release 1.21.4
+
+# Override Java for legacy/historical versions
+export MCLI_LEGACY_JAVA=/usr/lib/jvm/java-8-openjdk/bin/java
+javli classic c0.30
+```
+
+| Variable | Scope |
+|----------|-------|
+| `MCLI_JAVA` | Modern versions resolved via the standard Mojang launcher path |
+| `MCLI_LEGACY_JAVA` | Legacy/historical versions resolved via the legacy launch path |
+
+<Tip>
+  If neither variable is set, JAVLI handles everything automatically. You only need these overrides if you want to use a specific JRE distribution (e.g. GraalVM, Azul Zulu) or a custom build.
+</Tip>
+
+## Command Reference
+
+<Accordion title="javli java list">
+  Display all installed managed runtimes and the detected system Java.
+
+  ```bash
+  javli java list
+  ```
+</Accordion>
+
+<Accordion title="javli java install <major> [--force]">
+  Download and install a managed JRE for the given major version. Valid choices: `8`, `17`, `21`, `25`.
+
+  ```bash
+  javli java install 21
+  javli java install 8 --force
+  ```
+</Accordion>
+
+<Accordion title="javli java path <major>">
+  Print the absolute path to the managed Java executable for the given major version. Exits with an error if the runtime is not installed.
+
+  ```bash
+  javli java path 21
+  ```
+</Accordion>

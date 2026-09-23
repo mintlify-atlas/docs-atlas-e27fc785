@@ -1,0 +1,197 @@
+---
+title: "Minecraft Version Sources and Discovery in JAVLI"
+sidebarTitle: "Versions & Sources"
+description: "JAVLI pulls versions from Mojang and Omniarchive. List, search, and inspect every available Minecraft version across all eras from the command line."
+---
+
+JAVLI can discover Minecraft versions from two independent sources: the official Mojang version manifest and the Omniarchive community vault of preserved historical builds. By default the `auto` source queries both simultaneously and deduplicates the combined list, giving you access to every preserved build — from current releases all the way back to Pre-Classic — without picking a source manually.
+
+## Sources
+
+<CardGroup cols={2}>
+  <Card title="mojang" icon="cube">
+    The official Mojang version manifest at `piston-meta.mojang.com`. Covers all
+    modern and legacy versions that Mojang has published, including full library,
+    asset, and server download metadata.
+
+    **Era types:** `release`, `snapshot`, `beta` (`old_beta`), `alpha` (`old_alpha`)
+  </Card>
+  <Card title="omniarchive" icon="archive">
+    The community-run Omniarchive Vault at `vault.omniarchive.uk`. Preserves
+    historical client JARs that predate or fall outside the official manifest.
+    Compatibility metadata is supplemented from Betacraft where available.
+
+    **Era types:** `infdev`, `indev`, `classic`, `preclassic` (plus `alpha`, `beta`, `release` mirrors)
+  </Card>
+</CardGroup>
+
+### `auto` (default)
+
+When `--source` is omitted JAVLI uses `auto`, which queries both Mojang and Omniarchive and deduplicates results by version ID. Versions present in both sources are served from Mojang, which carries the richer library and asset manifest. Source warnings (e.g. a network error from one source) are printed to stderr so the command still returns results from the available source.
+
+## Era Types
+
+JAVLI normalises every version into one of eight era labels:
+
+| Era | Mojang type string | Period |
+|---|---|---|
+| `release` | `release` | 1.0 and later |
+| `snapshot` | `snapshot` | Weekly snapshots |
+| `beta` | `old_beta` | Beta 1.0 – Beta 1.9 |
+| `alpha` | `old_alpha` | Alpha v1.0 – v1.2.6 |
+| `infdev` | — | Infdev builds |
+| `indev` | — | Indev builds |
+| `classic` | — | Classic 0.0.x – 0.30 |
+| `preclassic` | — | Pre-Classic rd-* builds |
+
+<Note>
+  Mojang's manifest collapses legacy content into `old_beta` and `old_alpha`.
+  JAVLI normalises these to `beta` and `alpha` everywhere they appear in CLI output.
+</Note>
+
+## Discovery Commands
+
+### List versions
+
+```bash
+javli versions
+javli versions --historical
+javli versions --source omniarchive
+javli versions --type beta
+javli versions --type classic --source omniarchive
+javli versions --query "1.7" --limit 20
+```
+
+**Flags**
+
+| Flag | Default | Description |
+|---|---|---|
+| `--source` | `auto` | `auto`, `mojang`, or `omniarchive` |
+| `--type` | — | Filter to one era (`release`, `snapshot`, `beta`, `alpha`, `infdev`, `indev`, `classic`, `preclassic`) |
+| `--historical` | off | Exclude `release` and `snapshot`; show only historical eras |
+| `--query` | — | Case-insensitive substring filter on the version ID |
+| `--limit` | — | Truncate output to the first N results |
+
+Output columns: `VERSION`, `ERA`, `SOURCE`, `RELEASED`.
+
+### Search versions
+
+```bash
+javli search "b1.7"
+javli search "c0." --source omniarchive
+javli search "1.21" --type release --limit 5
+```
+
+**Flags**
+
+| Flag | Default | Description |
+|---|---|---|
+| `--source` | `auto` | Source to search |
+| `--type` | — | Restrict to one era |
+| `--limit` | `25` | Maximum results to return |
+
+`search` ranks results by relevance — exact matches first, then prefix matches, then substring matches, then recency — instead of purely by date.
+
+### Inspect a version
+
+```bash
+javli info 1.21.1
+javli info b1.7.3
+javli info c0.30 --source omniarchive
+```
+
+`info` fetches full version metadata and prints it as formatted JSON. The output object includes:
+
+```json
+{
+  "id": "1.21.1",
+  "type": "release",
+  "source": "mojang",
+  "release_time": "2024-08-08T12:43:07+00:00",
+  "metadata_url": "https://piston-meta.mojang.com/...",
+  "java": 21,
+  "main_class": "net.minecraft.client.main.Main",
+  "asset_index": "16",
+  "library_count": 42,
+  "downloads": ["client", "client_mappings", "server", "server_mappings"]
+}
+```
+
+| Field | Description |
+|---|---|
+| `id` | Version identifier |
+| `type` | Normalised era label |
+| `source` | `mojang` or `omniarchive` |
+| `release_time` | ISO 8601 timestamp, or `null` |
+| `metadata_url` | Raw manifest URL for this version |
+| `java` | Required Java major version, or `null` |
+| `main_class` | JVM entry point |
+| `asset_index` | Asset index ID |
+| `library_count` | Number of declared libraries |
+| `downloads` | Available download keys (e.g. `client`, `server`) |
+
+### Version statistics
+
+```bash
+javli stats
+javli stats --source mojang
+javli stats --source omniarchive
+```
+
+Prints the total version count, a breakdown by source, and a breakdown by era. Useful for confirming that both sources are reachable and to get a quick census of the known version pool.
+
+```text
+Total: 987
+By source:
+  mojang         812
+  omniarchive    175
+By era:
+  alpha           98
+  beta            56
+  classic         43
+  infdev          12
+  indev            6
+  preclassic       4
+  release        501
+  snapshot       267
+```
+
+## Omniarchive Manifest Format
+
+Omniarchive versions are discovered by crawling the vault directory tree. When JAVLI builds a synthetic manifest entry for an Omniarchive version it follows this shape, which mirrors the `example-omni-manifest.json` included in the JAVLI repository:
+
+```json
+{
+  "versions": [
+    {
+      "id": "example-legacy-version",
+      "type": "classic",
+      "releaseTime": "2010-01-01T00:00:00Z",
+      "downloads": {
+        "client": {
+          "url": "https://example.invalid/client.jar"
+        }
+      }
+    }
+  ]
+}
+```
+
+Each entry carries only the fields that Omniarchive can provide: the version ID (derived from the JAR filename), the era type, an optional release timestamp, and the direct client JAR download URL. Where available, Betacraft launcher metadata is merged in to supply library dependencies and a `mainClass` for applet-era builds.
+
+## Manifest Caching
+
+JAVLI caches fetched manifests under `~/.javli/cache/` with a **1-hour TTL** (3600 seconds). After the TTL expires the next command that queries that source will re-fetch and overwrite the cached file. To force an immediate refresh before the TTL elapses, delete the relevant cache file:
+
+```bash
+# Force Mojang manifest refresh
+rm ~/.javli/cache/mojang-manifest.json
+
+# Force all cached manifests to refresh
+rm ~/.javli/cache/*.json
+```
+
+<Tip>
+  Individual version detail files (e.g. `mojang-version-1.21.1.json`) have a
+  separate 30-day TTL because version metadata does not change once published.
+</Tip>

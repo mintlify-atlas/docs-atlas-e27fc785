@@ -1,0 +1,186 @@
+---
+title: "JAVLI Data Directory Layout and File Reference"
+sidebarTitle: "Data Directory"
+description: "All JAVLI data lives under ~/.javli/. Understand the directory structure: accounts, assets, cache, instances, libraries, runtimes, and servers."
+---
+
+JAVLI stores all of its persistent data — accounts, downloaded game files, cached manifests, instances, and managed Java runtimes — in a single directory under your home folder. Nothing is written elsewhere, so wiping or relocating the directory completely removes JAVLI's footprint without touching system files.
+
+## Paths
+
+| Platform | Path |
+|---|---|
+| macOS / Linux | `~/.javli/` |
+| Windows | `%USERPROFILE%\.javli\` |
+
+## Directory Tree
+
+```text
+~/.javli/
+├── accounts.json        # Saved Microsoft accounts and refresh tokens
+├── assets/              # Downloaded game assets (sounds, textures, etc.)
+├── cache/               # Cached version manifests (1-hour TTL)
+├── instances/           # Named game profiles (one subdirectory per instance)
+├── instances.json       # Instance index
+├── libraries/           # Downloaded Java libraries required by the game
+├── loaders/             # Installed modloader profiles (Fabric, Forge, etc.)
+├── runtimes/            # Managed Java runtimes
+│   ├── java-8/
+│   ├── java-17/
+│   ├── java-21/
+│   └── java-25/
+├── servers/             # Server working directories (one per server)
+├── servers.json         # Server index
+└── versions/            # Downloaded version JSON metadata
+```
+
+## File and Directory Reference
+
+<Accordion title="accounts.json">
+  Stores every saved Microsoft account, the active account alias, and the OAuth
+  refresh token for each account.
+
+  <Warning>
+    `accounts.json` contains authentication refresh tokens. Anyone with read
+    access to this file can impersonate your Microsoft account. Protect it with
+    appropriate filesystem permissions and **never share its contents**.
+
+    On multi-user systems consider restricting the entire `~/.javli/` directory
+    to your own user: `chmod 700 ~/.javli`.
+  </Warning>
+
+  Managed by `javli login`, `javli account use`, `javli account remove`, and
+  `javli account logout`.
+</Accordion>
+
+<Accordion title="assets/">
+  Holds all downloaded Minecraft game assets: sound files, language files,
+  textures referenced by the asset index. Assets are stored in the standard
+  Minecraft hash-based layout (`objects/<first-two-hex-chars>/<full-hash>`).
+
+  Assets are downloaded on first launch of a version and reused on subsequent
+  launches. JAVLI uses 32 concurrent workers to parallelize asset downloads.
+  You can safely delete this directory to free disk space; JAVLI will
+  re-download missing assets on next launch.
+</Accordion>
+
+<Accordion title="cache/">
+  Stores JSON manifests fetched from Mojang and Omniarchive with a **1-hour
+  TTL** (3600 seconds). When a cached file is younger than one hour JAVLI
+  serves it locally without making a network request.
+
+  Key files inside `cache/`:
+
+  | File | Contents | TTL |
+  |---|---|---|
+  | `mojang-manifest.json` | Full Mojang version manifest | 1 hour |
+  | `mojang-version-<id>.json` | Individual Mojang version metadata | 30 days |
+
+  Delete files here to force a fresh fetch:
+
+  ```bash
+  rm ~/.javli/cache/mojang-manifest.json
+  ```
+</Accordion>
+
+<Accordion title="instances/ and instances.json">
+  Each named instance created with `javli instance create` gets its own
+  subdirectory under `instances/`. Inside that subdirectory JAVLI keeps a
+  separate `minecraft/` game directory — saves, mods, config, resource packs,
+  screenshots, and logs are all scoped to the instance and never shared with
+  other instances.
+
+  `instances.json` is the index file that maps instance names to their metadata
+  (era, version, source, path). JAVLI reads this file for all `javli instance`
+  subcommands.
+</Accordion>
+
+<Accordion title="libraries/">
+  Contains all downloaded Java libraries (`.jar` files) that Minecraft versions
+  declare as dependencies. Libraries are shared across versions and instances —
+  a library downloaded for 1.21.1 will not be re-downloaded for 1.21.4 if the
+  same artifact is listed in both version manifests.
+</Accordion>
+
+<Accordion title="loaders/">
+  Stores installed modloader profiles. When you install Fabric, Forge, NeoForge,
+  or Quilt (via `javli loader <loader> <minecraft>` or the `--fabric` /
+  `--forge` / `--neoforge` / `--quilt` launch flags), the loader profile is
+  cached here and reused for subsequent launches without re-downloading.
+</Accordion>
+
+<Accordion title="runtimes/">
+  Managed Java runtimes downloaded by JAVLI from Adoptium. Each subdirectory
+  is a self-contained JRE:
+
+  | Directory | Java Version |
+  |---|---|
+  | `java-8/` | Java 8 (legacy/historical versions) |
+  | `java-17/` | Java 17 |
+  | `java-21/` | Java 21 (current releases) |
+  | `java-25/` | Java 25 |
+
+  JAVLI selects the appropriate runtime automatically based on the version's
+  metadata. You can override this selection with the `MCLI_JAVA` and
+  `MCLI_LEGACY_JAVA` environment variables (see [Configuration](/configuration)).
+
+  Install a runtime explicitly:
+
+  ```bash
+  javli java install 21
+  ```
+
+  List installed runtimes:
+
+  ```bash
+  javli java list
+  ```
+</Accordion>
+
+<Accordion title="servers/ and servers.json">
+  Each server created with `javli server create` gets a working directory under
+  `servers/`. The server JAR, `server.properties`, world data, and logs all live
+  inside that directory.
+
+  `servers.json` is the index of all registered servers and their metadata
+  (name, kind, version, path, last known PID). JAVLI reads this file for all
+  `javli server` subcommands.
+</Accordion>
+
+<Accordion title="versions/">
+  Holds the downloaded version JSON metadata files for every version JAVLI has
+  installed or inspected. These are the same JSON documents Mojang hosts at the
+  URLs listed in the main version manifest, saved locally so JAVLI can read
+  classpath and asset information without a network request on every launch.
+</Accordion>
+
+## Security Considerations
+
+<Warning>
+  **Protect `accounts.json`** — it contains Microsoft OAuth refresh tokens that
+  grant access to your Minecraft account. On shared or multi-user machines:
+
+  - Restrict `~/.javli/` to owner-only access: `chmod 700 ~/.javli`
+  - Do not back up `~/.javli/` to shared or unencrypted storage without
+    excluding `accounts.json`
+  - Use `javli account remove <alias>` or `javli account logout` to invalidate
+    stored credentials when they are no longer needed
+</Warning>
+
+## Cleaning Up
+
+To remove specific data without uninstalling JAVLI:
+
+```bash
+# Remove a single managed Java runtime
+rm -rf ~/.javli/runtimes/java-8
+
+# Clear the version manifest cache (forces re-fetch on next command)
+rm ~/.javli/cache/*.json
+
+# Remove all downloaded assets (will be re-downloaded on next launch)
+rm -rf ~/.javli/assets
+
+# Remove everything — full reset
+rm -rf ~/.javli
+```

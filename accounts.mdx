@@ -1,0 +1,141 @@
+---
+title: "Microsoft Account Authentication in JAVLI"
+sidebarTitle: "Accounts"
+description: "Authenticate with Microsoft using the device code flow. JAVLI supports multiple saved accounts and token refresh without re-entering credentials."
+---
+
+JAVLI uses Microsoft's device code OAuth flow to authenticate you with Minecraft. Instead of typing a password into the terminal, you open a short URL in any browser, enter a one-time code, and JAVLI completes the rest of the chain automatically. Once logged in, your credentials are saved locally so every subsequent launch only needs a silent token refresh — no browser interaction required unless a refresh token expires.
+
+## How Authentication Works
+
+<Steps>
+  <Step title="Request a device code">
+    JAVLI calls the Microsoft OAuth endpoint and receives a short alphanumeric user code plus a verification URL.
+  </Step>
+  <Step title="Authorise in a browser">
+    JAVLI prints the URL and code, and attempts to open your browser automatically. Navigate to `https://microsoft.com/link` and enter the displayed code.
+  </Step>
+  <Step title="Poll for the token">
+    JAVLI polls the token endpoint every few seconds until you complete the browser step. When Microsoft confirms authorisation, JAVLI receives a Microsoft access token and a refresh token.
+  </Step>
+  <Step title="Complete the Minecraft auth chain">
+    JAVLI exchanges the Microsoft access token through the full chain:
+    **Microsoft → Xbox Live → XSTS → Minecraft Services**. It then verifies your entitlements and fetches your Minecraft Java profile (username + UUID).
+  </Step>
+  <Step title="Save the account">
+    The account — including the refresh token, Minecraft access token, and profile — is written to `~/.javli/accounts.json`. On every future launch, JAVLI refreshes the Minecraft token automatically.
+  </Step>
+</Steps>
+
+## Logging In
+
+```bash
+# Log in with the default alias (your Minecraft username)
+javli login
+
+# Log in and save the account under a custom alias
+javli login --alias main
+javli login --alias alt
+```
+
+The `--alias` flag lets you assign a memorable name to an account. If omitted, JAVLI uses your Minecraft profile name as the alias. After login, the new account becomes the active account used for all launches.
+
+## Managing Saved Accounts
+
+JAVLI supports multiple saved accounts. Each account is stored under its alias and you can switch between them freely.
+
+### List all accounts
+
+```bash
+javli account list
+```
+
+```text
+* main               CoolMiner          a1b2c3d4e5f6...
+  alt                TestPlayer         9f8e7d6c5b4a...
+```
+
+The `*` marker indicates the currently active account.
+
+### Show the active account
+
+```bash
+# Explicit subcommand
+javli account show
+
+# Shorthand — same result when no subcommand is given
+javli account
+```
+
+### Switch the active account
+
+```bash
+javli account use alt
+```
+
+You can pass either the alias or the Minecraft username/UUID — JAVLI resolves all three.
+
+### Refresh tokens
+
+```bash
+# Refresh the active account
+javli account refresh
+
+# Refresh a specific account by alias
+javli account refresh --alias alt
+```
+
+Refreshing re-runs the Microsoft → Minecraft chain using the saved refresh token. No browser interaction is required unless the refresh token itself has expired, in which case you must run `javli login` again.
+
+### Remove an account
+
+```bash
+# Remove a specific account by alias
+javli account remove alt
+```
+
+This deletes the account entry from `~/.javli/accounts.json`. If the removed account was active, JAVLI automatically promotes the next saved account to active (or clears the active account if none remain).
+
+### Log out of the active account
+
+```bash
+javli account logout
+```
+
+`logout` is a convenience alias that removes whichever account is currently active.
+
+## Multi-Account Summary
+
+<CardGroup cols={2}>
+  <Card title="javli login [--alias &lt;name&gt;]" icon="right-to-bracket">
+    Authenticate via device code and save the account.
+  </Card>
+  <Card title="javli account list" icon="list">
+    Show all saved accounts; active account marked with `*`.
+  </Card>
+  <Card title="javli account use &lt;alias&gt;" icon="user-check">
+    Switch the active account.
+  </Card>
+  <Card title="javli account refresh [--alias &lt;alias&gt;]" icon="rotate">
+    Refresh tokens silently using the saved refresh token.
+  </Card>
+  <Card title="javli account remove &lt;alias&gt;" icon="user-minus">
+    Remove a saved account by alias.
+  </Card>
+  <Card title="javli account logout" icon="right-from-bracket">
+    Remove the currently active account.
+  </Card>
+  <Card title="javli account show" icon="circle-info">
+    Print the active account's username and UUID.
+  </Card>
+</CardGroup>
+
+## Security
+
+<Warning>
+  `~/.javli/accounts.json` contains Microsoft **refresh tokens** and Minecraft **access tokens**. Treat this file as sensitive — anyone with read access to it can authenticate as you.
+
+  - Do not commit it to version control.
+  - Do not share it or copy it to untrusted machines.
+  - Restrict file permissions: `chmod 600 ~/.javli/accounts.json`
+</Warning>

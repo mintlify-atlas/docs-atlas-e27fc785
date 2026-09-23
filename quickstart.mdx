@@ -1,47 +1,242 @@
 ---
-title: "Quickstart"
-description: "Begin with a guide on the fastest path to a successful outcome"
+title: "Get Started with JAVLI in 5 Minutes"
+sidebarTitle: "Quickstart"
+description: "Log in with your Microsoft account, download a Java runtime, and launch Minecraft 1.21.1 in under five minutes using JAVLI."
 ---
 
-Describe how someone begins using your product. What is the first thing they need to do? Are there any prerequisites?
+This guide takes you from a fresh JAVLI installation to a running Minecraft session in five minutes. You will log in with your Microsoft account, inspect available versions, and launch Minecraft 1.21.1 — with an optional modloader and a persistent named instance.
 
-A quickstart should take someone from zero to using your product. They'll get a quick win and a sense of what they can accomplish.
-
-## Prerequisites
-
-Before you begin, you must have:
-
-- Requirement one (for example, Node.js 18+, a free account, an API key)
-- Requirement two (for example, a compatible device, a compatible browser, a compatible operating system)
-
-## Get started
+<Note>
+  **Java is installed automatically.** JAVLI reads the Java version requirement from Minecraft's metadata and downloads the correct runtime from Adoptium if it is not already present. You do not need to install Java before running these commands.
+</Note>
 
 <Steps>
-  <Step title="Install">
-    Describe how to install your product or sign up.
+  <Step title="Install JAVLI">
+    If you have not already installed JAVLI, follow the [Installation guide](/installation) and then return here. Verify your installation is working:
 
     ```bash
-    npm install your-package
+    javli --help
     ```
   </Step>
-  <Step title="Configure">
-    Describe any setup or configuration needed before first use.
+
+  <Step title="Log in with your Microsoft account">
+    JAVLI uses Microsoft's OAuth device-code flow. Running `javli login` prints a short code and a URL, then opens your browser automatically.
 
     ```bash
-    your-cli init
+    javli login
+    ```
+
+    Expected output:
+
+    ```
+    Microsoft sign-in
+    Open: https://microsoft.com/link
+    Code: ABCD-1234
+    ```
+
+    1. Open [microsoft.com/link](https://microsoft.com/link) in your browser (it opens automatically if possible).
+    2. Enter the code shown in your terminal.
+    3. Sign in with the Microsoft account that owns your Minecraft Java Edition licence.
+
+    Once authentication completes, JAVLI confirms the logged-in profile:
+
+    ```
+    Logged in as Steve (xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)
+    ```
+
+    <Tip>
+      You can store multiple accounts under different aliases. For example:
+      ```bash
+      javli login --alias main
+      javli login --alias alt
+      javli account use main
+      ```
+    </Tip>
+  </Step>
+
+  <Step title="Browse available versions">
+    Check what versions JAVLI can see before launching. The `versions` command queries both Mojang and Omniarchive by default.
+
+    ```bash
+    # List all versions
+    javli versions
+
+    # List only official releases
+    javli versions --type release
+
+    # Include historical builds (pre-release eras)
+    javli versions --historical
+
+    # Filter to Omniarchive sources only
+    javli versions --source omniarchive
+    ```
+
+    Search for a specific version string:
+
+    ```bash
+    javli search "1.7"
+    ```
+
+    Inspect the full metadata for a single version:
+
+    ```bash
+    javli info 1.21.1
+    ```
+
+    See a summary of how many versions are known across all eras and sources:
+
+    ```bash
+    javli stats
     ```
   </Step>
-  <Step title="Run it">
-    Show the first thing a user does to see it working.
+
+  <Step title="Launch Minecraft 1.21.1">
+    Launch a release version by passing the version ID to the `release` subcommand. JAVLI resolves metadata, downloads any missing libraries and assets, selects the right Java runtime (installing it if needed), and starts the game.
 
     ```bash
-    your-cli start
+    javli release 1.21.1
+    ```
+
+    On first launch, you will see download progress as libraries and assets are cached to `~/.javli/`. Subsequent launches use the local cache.
+
+    You can launch other eras in exactly the same way:
+
+    ```bash
+    # Minecraft Beta 1.7.3
+    javli beta b1.7.3
+
+    # Minecraft Classic 0.30
+    javli classic c0.30
+    ```
+  </Step>
+
+  <Step title="Launch with a modloader (optional)">
+    Modloaders are available for Mojang-backed release versions. Pass a loader flag to the launch command — JAVLI installs and launches the loader automatically.
+
+    <CodeGroup>
+      ```bash Fabric
+      javli release 1.21.1 --fabric
+      ```
+
+      ```bash Quilt
+      javli release 1.21.1 --quilt
+      ```
+
+      ```bash Forge
+      javli release 1.20.1 --forge
+      ```
+
+      ```bash NeoForge
+      javli release 1.21.1 --neoforge
+      ```
+    </CodeGroup>
+
+    To pin a specific loader version, add `--loader-version`:
+
+    ```bash
+    javli release 1.21.1 --fabric --loader-version 0.16.0
+    ```
+
+    <Warning>
+      Modloaders are only supported on versions sourced from Mojang. Raw Omniarchive jars do not support `--fabric`, `--quilt`, `--forge`, or `--neoforge`.
+    </Warning>
+  </Step>
+
+  <Step title="Create a named instance">
+    Named instances give each playthrough its own isolated directory for saves, configs, mods, resource packs, and screenshots.
+
+    Create an instance called `survival` pinned to release 1.21.1:
+
+    ```bash
+    javli instance create survival release 1.21.1
+    ```
+
+    Launch it by name:
+
+    ```bash
+    javli instance launch survival
+    ```
+
+    List all your instances:
+
+    ```bash
+    javli instance list
+    ```
+
+    Clone an instance (useful for testing mods without touching your main save):
+
+    ```bash
+    javli instance clone survival survival-backup
     ```
   </Step>
 </Steps>
 
-<Tip>
-  Give people a way to get help. This could be a link to a support page, a chat with a customer support agent, or a forum for your product.
+## What to Explore Next
 
-  Example: Need help? Reach out to us at [support@yourcompany.com](mailto:support@yourcompany.com).
-</Tip>
+Now that you have a working Minecraft launch, here are some common next steps:
+
+<CardGroup cols={2}>
+  <Card title="Install mods from Modrinth" icon="cube" href="/mods">
+    Search and install mods directly into a named instance.
+    ```bash
+    javli mods search sodium --minecraft 1.21.1 --loader fabric
+    javli mods install sodium --instance survival --loader fabric
+    ```
+  </Card>
+  <Card title="Manage Java runtimes" icon="java" href="/java-runtimes">
+    List installed runtimes or pre-install a specific major version.
+    ```bash
+    javli java list
+    javli java install 21
+    ```
+  </Card>
+  <Card title="Create a game server" icon="server" href="/servers">
+    Spin up a vanilla or Paper server, accept the EULA, and start it.
+    ```bash
+    javli server create smp 1.21.1
+    javli server eula smp
+    javli server start smp
+    ```
+  </Card>
+  <Card title="Manage accounts" icon="user-shield" href="/accounts">
+    Switch between multiple Microsoft accounts or refresh an expired token.
+    ```bash
+    javli account list
+    javli account use main
+    javli account refresh
+    ```
+  </Card>
+</CardGroup>
+
+## Quick Reference
+
+```bash
+# Version discovery
+javli versions                                  # list all versions
+javli versions --historical                     # include pre-Alpha eras
+javli versions --type beta                      # filter by era
+javli search "1.7"                              # fuzzy version search
+javli info 1.21.1                               # full metadata for one version
+javli stats                                     # version counts by era and source
+
+# Launching
+javli release 1.21.1                            # launch a release
+javli beta b1.7.3                               # launch a beta
+javli release 1.21.1 --fabric                   # launch with Fabric
+
+# Instances
+javli instance create survival release 1.21.1   # create an instance
+javli instance launch survival                  # launch by name
+javli instance list                             # list all instances
+javli instance clone survival survival-copy     # duplicate an instance
+
+# Accounts
+javli login                                     # sign in
+javli login --alias alt                         # sign in with an alias
+javli account list                              # list saved accounts
+javli account use main                          # switch active account
+
+# Java
+javli java list                                 # list installed runtimes
+javli java install 21                           # install Java 21
+```

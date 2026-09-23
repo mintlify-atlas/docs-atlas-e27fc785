@@ -1,0 +1,178 @@
+---
+title: "Launching Minecraft Versions with JAVLI"
+sidebarTitle: "Launching"
+description: "Launch any Minecraft version from modern releases to pre-classic builds. Specify era, version, source, and optional modloader in a single command."
+---
+
+JAVLI can launch every era of Minecraft — from the latest release all the way back to Pre-Classic — with a single command. You pick the era subcommand, pass the version string, and JAVLI resolves metadata, downloads libraries and assets, selects the right Java runtime, and starts the game. Asset downloads use 32 concurrent workers and are cached under `~/.javli/assets` so subsequent launches skip files already on disk.
+
+## Era Subcommands
+
+Each era has its own subcommand that takes a `<version>` positional argument. Use `javli versions` to browse available IDs.
+
+<CardGroup cols={2}>
+  <Card title="release" icon="cube">
+    Modern releases — e.g. `1.21.4`, `26.1.2`
+  </Card>
+  <Card title="snapshot" icon="flask">
+    Weekly snapshots — e.g. `25w14a`
+  </Card>
+  <Card title="beta" icon="clock-rotate-left">
+    Beta versions — e.g. `b1.7.3`
+  </Card>
+  <Card title="alpha" icon="clock-rotate-left">
+    Alpha versions — e.g. `a1.2.6`
+  </Card>
+  <Card title="infdev" icon="scroll">
+    Infdev builds
+  </Card>
+  <Card title="indev" icon="scroll">
+    Indev builds
+  </Card>
+  <Card title="classic" icon="scroll">
+    Classic builds
+  </Card>
+  <Card title="preclassic" icon="scroll">
+    Pre-Classic builds
+  </Card>
+</CardGroup>
+
+```bash
+# Modern releases
+javli release 1.21.4
+javli release 26.1.2
+
+# Snapshots
+javli snapshot 25w14a
+
+# Historical eras
+javli beta b1.7.3
+javli alpha a1.2.6
+javli infdev <version>
+javli indev <version>
+javli classic <version>
+javli preclassic <version>
+```
+
+## The `--source` Flag
+
+By default JAVLI tries every available source and picks the best match. You can pin a specific source with `--source`.
+
+| Value | Behaviour |
+|-------|-----------|
+| `auto` | Try Mojang first, fall back to Omniarchive (default) |
+| `mojang` | Restrict to the official Mojang manifest only |
+| `omniarchive` | Restrict to the Omniarchive preservation catalogue |
+
+```bash
+# Explicitly use the Mojang manifest
+javli release 1.21.4 --source mojang
+
+# Pull an old build from Omniarchive
+javli classic c0.30 --source omniarchive
+```
+
+<Note>
+  Omniarchive-sourced versions are raw historical jars. Modloaders are **not** supported when `--source omniarchive` is used — see the Modloaders section below.
+</Note>
+
+## Memory Defaults per Era
+
+JAVLI automatically sets a sensible `-Xmx` heap limit based on the era when the version metadata does not already specify one.
+
+| Era | Default heap |
+|-----|-------------|
+| Pre-Classic, Classic, Indev, Infdev | 256 MB |
+| Alpha, Beta | 512 MB |
+| Release, Snapshot | 2 GB |
+
+You can override this at any time by setting `-Xmx` yourself via a custom JVM argument, or by using the `MCLI_JAVA` environment variable to point to a Java executable that already has tuned defaults.
+
+## Asset Downloads
+
+JAVLI downloads Minecraft assets from `https://resources.download.minecraft.net` and caches them under `~/.javli/assets`. On the first launch of a version, up to **32 parallel workers** fetch missing objects. Subsequent launches re-use the cache and skip already-downloaded files.
+
+```text
+Assets: 0/2847 cached — downloading 2847 with 32 workers
+Assets: 2847/2847 (100%)
+```
+
+## Modloaders
+
+You can launch Minecraft with Fabric, Forge, NeoForge, or Quilt by adding the corresponding flag. Only one modloader flag may be specified per launch. An optional `--loader-version` pin is also accepted.
+
+```bash
+# Launch with Fabric (latest compatible loader version)
+javli release 1.21.4 --fabric
+
+# Launch with a specific Fabric loader version
+javli release 1.21.4 --fabric --loader-version 0.16.10
+
+# Launch with Forge
+javli release 1.21.4 --forge
+
+# Launch with NeoForge
+javli release 1.21.4 --neoforge
+
+# Launch with Quilt
+javli release 1.21.4 --quilt
+```
+
+<Warning>
+  Modloaders only work with **Mojang-backed versions**. If you pass `--source omniarchive` alongside a modloader flag, JAVLI will exit with an error: *"Modloaders are supported on Mojang-backed versions, not raw Omniarchive jars."*
+</Warning>
+
+The four modloader flags are mutually exclusive — only one may be used at a time.
+
+## The `javli random` Command
+
+`javli random` picks a random version from the catalogue and launches it immediately.
+
+```bash
+# Launch a completely random version from any era
+javli random
+
+# Random version from a specific era
+javli random --type release
+javli random --type beta
+
+# Include historical/preservation versions from Omniarchive
+javli random --historical
+
+# Restrict the pool to a specific source
+javli random --source mojang
+javli random --source omniarchive
+
+# Print the chosen version without actually launching it
+javli random --dry-run
+```
+
+| Flag | Description |
+|------|-------------|
+| `--type <era>` | Restrict the pool to one era (same choices as era subcommands) |
+| `--source` | `auto` / `mojang` / `omniarchive` |
+| `--historical` | Include Omniarchive preservation versions in the pool |
+| `--dry-run` | Print the selected version but do not launch |
+
+## Java Environment Variable Overrides
+
+JAVLI auto-installs managed Java runtimes via Eclipse Adoptium, but you can point it at any executable on your system.
+
+| Variable | Applies to |
+|----------|-----------|
+| `MCLI_JAVA` | Modern versions (Release, Snapshot, and other Mojang-sourced versions) |
+| `MCLI_LEGACY_JAVA` | Legacy / historical versions resolved via the legacy launch path |
+
+```bash
+# Use a custom JRE for modern Minecraft
+export MCLI_JAVA=/opt/my-jre/bin/java
+javli release 1.21.4
+
+# Use a separate JRE for old historical builds
+export MCLI_LEGACY_JAVA=/usr/lib/jvm/java-8-openjdk/bin/java
+javli classic c0.30
+```
+
+<Tip>
+  If neither environment variable is set, JAVLI falls back to its managed runtime under `~/.javli/runtimes/`, then to the system `java` on `$PATH`, and finally auto-installs a managed runtime if nothing is found. See the **Java Runtimes** page for the full resolution order.
+</Tip>

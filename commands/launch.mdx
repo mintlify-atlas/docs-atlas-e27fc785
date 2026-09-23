@@ -1,0 +1,155 @@
+---
+title: "javli release / beta / classic — Launch Commands"
+sidebarTitle: "Launch"
+description: "Launch any Minecraft version by era. Covers release, snapshot, beta, alpha, infdev, indev, classic, preclassic commands and their flags."
+---
+
+JAVLI provides one top-level command per Minecraft era so you can launch any build — from the latest release to a pre-classic experiment — with a single command. All era commands share the same signature and flags. An optional `--source` flag controls where JAVLI looks for the version, and a set of mutually exclusive modloader flags let you attach Fabric, Forge, NeoForge, or Quilt before the game starts.
+
+## Era commands
+
+Each command targets a distinct period of Minecraft's history. Pass the exact version ID as the positional argument.
+
+| Command | Era | Example versions |
+|---|---|---|
+| `javli release` | Official releases (1.0 and later) | `1.21.1`, `1.20.4`, `1.8` |
+| `javli snapshot` | Weekly development snapshots | `24w14a`, `23w31a` |
+| `javli beta` | Beta builds (b1.0 – b1.8.1) | `b1.7.3`, `b1.8.1` |
+| `javli alpha` | Alpha builds (a0.1.0 – a0.2.8) | `a0.2.8`, `a0.1.0` |
+| `javli infdev` | Infdev builds (2010) | `inf-20100618` |
+| `javli indev` | Indev builds (2009–2010) | `in-20100223` |
+| `javli classic` | Classic builds (2009) | `c0.30`, `c0.0.23a` |
+| `javli preclassic` | Pre-Classic / Cave Game builds | `rd-132211` |
+
+### Syntax
+
+```bash
+javli <era> <version> [--source auto|mojang|omniarchive] [--fabric|--forge|--neoforge|--quilt] [--loader-version <version>]
+```
+
+### Examples
+
+```bash
+# Launch the latest release
+javli release 1.21.1
+
+# Launch a snapshot
+javli snapshot 24w14a
+
+# Launch a Beta build
+javli beta b1.7.3
+
+# Launch a Classic build from Omniarchive
+javli classic c0.30 --source omniarchive
+
+# Launch with Fabric modloader
+javli release 1.21.1 --fabric
+
+# Launch with a specific Forge version
+javli release 1.20.1 --forge --loader-version 47.3.0
+
+# Launch with NeoForge
+javli release 1.21.1 --neoforge
+
+# Launch with Quilt
+javli release 1.21.1 --quilt
+```
+
+## Arguments and flags
+
+<ParamField path="version" type="string" required>
+  The Minecraft version ID to launch. Must match an ID returned by `javli versions` or `javli search`. Examples: `1.21.1`, `b1.7.3`, `c0.30`, `rd-132211`.
+</ParamField>
+
+<ParamField query="--source" type="string" default="auto">
+  Version source to use when resolving the version ID.
+
+  - `auto` — query both Mojang and Omniarchive and use whichever finds the version (default)
+  - `mojang` — official Mojang version manifest only
+  - `omniarchive` — Omniarchive historical archive only
+</ParamField>
+
+<ParamField query="--fabric" type="boolean">
+  Launch with the Fabric modloader installed. Mutually exclusive with `--forge`, `--neoforge`, and `--quilt`. Requires a Mojang-backed version.
+</ParamField>
+
+<ParamField query="--forge" type="boolean">
+  Launch with the Forge modloader installed. Mutually exclusive with `--fabric`, `--neoforge`, and `--quilt`. Requires a Mojang-backed version.
+</ParamField>
+
+<ParamField query="--neoforge" type="boolean">
+  Launch with the NeoForge modloader installed. Mutually exclusive with `--fabric`, `--forge`, and `--quilt`. Requires a Mojang-backed version.
+</ParamField>
+
+<ParamField query="--quilt" type="boolean">
+  Launch with the Quilt modloader installed. Mutually exclusive with `--fabric`, `--forge`, and `--neoforge`. Requires a Mojang-backed version.
+</ParamField>
+
+<ParamField query="--loader-version" type="string">
+  Pin a specific modloader version instead of using the latest available. Only effective when a modloader flag is also provided.
+
+  ```bash
+  javli release 1.20.1 --fabric --loader-version 0.15.11
+  ```
+</ParamField>
+
+<Note>
+  Modloaders (`--fabric`, `--forge`, `--neoforge`, `--quilt`) are only supported on Mojang-backed versions. Omniarchive raw jars do not support modloader injection.
+</Note>
+
+<Warning>
+  JAVLI validates that the resolved version's era matches the command you used. For example, running `javli release b1.7.3` will fail with an era mismatch error.
+</Warning>
+
+---
+
+## javli random
+
+The `random` command picks a Minecraft version at random from the catalog and launches it immediately. It accepts the same `--source` flag as the era commands plus a few extra options for narrowing the random selection.
+
+### Syntax
+
+```bash
+javli random [--source auto|mojang|omniarchive] [--type <era>] [--historical] [--dry-run]
+```
+
+### Examples
+
+```bash
+# Launch a completely random Minecraft version
+javli random
+
+# Random version from Omniarchive
+javli random --source omniarchive
+
+# Random Beta-era build only
+javli random --type beta
+
+# Include historical/archived versions in the pool
+javli random --historical
+
+# Pick a version and print it without launching
+javli random --dry-run
+```
+
+### Arguments and flags
+
+<ParamField query="--source" type="string" default="auto">
+  Version catalog source. Same values as the era commands: `auto`, `mojang`, `omniarchive`.
+</ParamField>
+
+<ParamField query="--type" type="string">
+  Restrict the random selection to a specific era. Accepted values: `release`, `snapshot`, `beta`, `alpha`, `infdev`, `indev`, `classic`, `preclassic`.
+</ParamField>
+
+<ParamField query="--historical" type="boolean">
+  Expand the pool to include archived or historical versions that are excluded by default.
+</ParamField>
+
+<ParamField query="--dry-run" type="boolean">
+  Print the randomly selected version ID without actually launching Minecraft.
+</ParamField>
+
+<Tip>
+  Combine `--type beta --historical` to get the widest possible pool of Beta-era builds, including archived variants sourced from Omniarchive.
+</Tip>

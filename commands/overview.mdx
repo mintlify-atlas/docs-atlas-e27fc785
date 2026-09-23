@@ -1,0 +1,92 @@
+---
+title: "JAVLI Command Reference Overview"
+sidebarTitle: "Overview"
+description: "Complete reference for all JAVLI commands. Covers launch, account, Java, instance, mods, modpacks, servers, versions, and utility commands."
+---
+
+JAVLI is a Python-based command-line Minecraft launcher that brings together modern and historical Minecraft versions, Microsoft account management, Java runtime installation, isolated game instances, modloaders, mods, modpacks, resource packs, shaders, and local server management under a single `javli` command. This page lists every top-level command available in JAVLI and links to the detailed reference page for each group.
+
+## Command groups
+
+<CardGroup cols={2}>
+  <Card title="Launch" icon="rocket" href="/commands/launch">
+    Launch any Minecraft version by era — `release`, `snapshot`, `beta`, `alpha`, `infdev`, `indev`, `classic`, `preclassic` — with optional modloader flags and the `random` command.
+  </Card>
+  <Card title="account" icon="user" href="/commands/account">
+    Log in with Microsoft, switch active accounts, refresh tokens, and remove saved accounts with `login` and `account`.
+  </Card>
+  <Card title="java" icon="coffee" href="/commands/java">
+    Install and manage Java runtimes (Java 8, 17, 21, 25) via Adoptium, list installed versions, and print executable paths.
+  </Card>
+  <Card title="instance" icon="layer-group" href="/commands/instance">
+    Create, launch, clone, and delete isolated Minecraft instances, each with its own saves, mods, and configuration.
+  </Card>
+  <Card title="mods / modpack / loader" icon="puzzle-piece" href="/commands/mods">
+    Search and install mods, modpacks, resource packs, shaders, and standalone modloaders from Modrinth.
+  </Card>
+  <Card title="server" icon="server" href="/commands/server">
+    Create and manage local vanilla or Paper Minecraft servers, control server lifecycle, accept the EULA, and edit `server.properties`.
+  </Card>
+  <Card title="versions / search / info" icon="magnifying-glass" href="/commands/versions">
+    Discover and inspect Minecraft versions by era, search by ID, view detailed metadata, and check version statistics.
+  </Card>
+</CardGroup>
+
+## All commands at a glance
+
+| Command | Description |
+|---|---|
+| `javli release <version>` | Launch a Minecraft release build |
+| `javli snapshot <version>` | Launch a Minecraft snapshot build |
+| `javli beta <version>` | Launch a Beta-era build |
+| `javli alpha <version>` | Launch an Alpha-era build |
+| `javli infdev <version>` | Launch an Infdev-era build |
+| `javli indev <version>` | Launch an Indev-era build |
+| `javli classic <version>` | Launch a Classic-era build |
+| `javli preclassic <version>` | Launch a Pre-Classic build |
+| `javli random` | Launch a randomly selected Minecraft version |
+| `javli login` | Authenticate with a Microsoft account |
+| `javli account` | Manage saved Microsoft accounts |
+| `javli java` | Install and manage Java runtimes |
+| `javli instance` | Manage isolated Minecraft instances |
+| `javli mods` | Search, install, and remove mods via Modrinth |
+| `javli modpack` | Search and install modpacks via Modrinth |
+| `javli loader` | Install a standalone modloader for a Minecraft version |
+| `javli resourcepack` | Search, install, and remove resource packs via Modrinth |
+| `javli shader` | Search, install, and remove shaders via Modrinth |
+| `javli server` | Create and manage local Minecraft servers |
+| `javli versions` | List available Minecraft versions |
+| `javli search <query>` | Search versions by ID or keyword |
+| `javli info <version>` | Show detailed metadata for a specific version |
+| `javli stats` | Show version count statistics by source and era |
+| `javli update` | Update the JAVLI binary from GitHub Releases |
+
+## Data directory
+
+All JAVLI data lives under `~/.javli/`:
+
+```
+accounts.json
+assets/
+cache/
+instances/
+libraries/
+loaders/
+runtimes/
+servers/
+versions/
+```
+
+<Warning>
+  `accounts.json` may contain Microsoft authentication refresh tokens. Treat it as a sensitive file and avoid sharing it.
+</Warning>
+
+## Sources
+
+JAVLI pulls version metadata from two sources, selectable with `--source` on most commands:
+
+| Source | Description |
+|---|---|
+| `mojang` | Official Mojang version manifest — releases, snapshots, and legacy eras |
+| `omniarchive` | Direct historical Java client discovery for preserved Minecraft builds |
+| `auto` | Try both sources and merge results (default) |

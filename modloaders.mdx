@@ -1,0 +1,143 @@
+---
+title: "Install Fabric, Forge, Quilt, and NeoForge with JAVLI"
+sidebarTitle: "Modloaders"
+description: "JAVLI supports Fabric, Quilt, Forge, and NeoForge. Install a modloader inline during launch or as a standalone step with javli loader."
+---
+
+JAVLI supports four major modloaders — Fabric, Quilt, Forge, and NeoForge — and lets you attach them to any Mojang-backed Minecraft version either inline at launch time or as a separate pre-install step. Each modloader is fetched directly from its official distribution endpoint, and loader files are cached locally so subsequent launches skip the download.
+
+## Supported modloaders
+
+<CardGroup cols={2}>
+  <Card title="Fabric" icon="layer-group">
+    Lightweight, fast-updating modloader. Metadata fetched from `https://meta.fabricmc.net`.
+  </Card>
+  <Card title="Quilt" icon="layer-group">
+    Fork of Fabric with extended APIs. Metadata fetched from `https://meta.quiltmc.org`.
+  </Card>
+  <Card title="Forge" icon="hammer">
+    The long-standing modloader for large packs. Installer fetched from Maven at `https://maven.minecraftforge.net`.
+  </Card>
+  <Card title="NeoForge" icon="hammer">
+    Modern Forge fork maintained by the NeoForged project. Installer fetched from Maven at `https://maven.neoforged.net`.
+  </Card>
+</CardGroup>
+
+<Note>
+  Modloaders only work with **Mojang-backed versions**. Passing a modloader flag when launching a raw Omniarchive jar will exit with an error.
+</Note>
+
+## Option 1 — Inline with launch
+
+Pass a modloader flag directly to any era-based launch command. The four flags belong to a mutually exclusive group, so you can only pick one per launch.
+
+```bash
+# Fabric
+javli release 1.21.1 --fabric
+
+# Quilt
+javli release 1.21.1 --quilt
+
+# Forge
+javli release 1.20.1 --forge
+
+# NeoForge
+javli release 1.21.1 --neoforge
+```
+
+Pin a specific loader version with `--loader-version`:
+
+```bash
+javli release 1.21.1 --fabric --loader-version 0.15.11
+javli release 1.20.1 --forge  --loader-version 47.3.0
+```
+
+<Tip>
+  Without `--loader-version`, JAVLI always selects the **newest available** loader version for the given Minecraft release.
+</Tip>
+
+## Option 2 — Standalone install
+
+Use `javli loader` to download and install a loader without immediately launching the game. This is useful for CI pipelines or when you want to pre-stage a loader before creating an instance.
+
+```bash
+javli loader <loader> <minecraft-version> [--loader-version <version>]
+```
+
+**Examples:**
+
+```bash
+# Install the latest Fabric for 1.21.1
+javli loader fabric 1.21.1
+
+# Install a pinned Quilt version
+javli loader quilt 1.21.1 --loader-version 0.26.4
+
+# Install NeoForge for 1.21.1
+javli loader neoforge 1.21.1
+
+# Install a specific Forge build for 1.20.1
+javli loader forge 1.20.1 --loader-version 47.3.0
+```
+
+### `javli loader` reference
+
+| Argument | Required | Description |
+|---|---|---|
+| `loader` | ✅ | One of `fabric`, `quilt`, `forge`, `neoforge` |
+| `minecraft` | ✅ | Target Minecraft version, e.g. `1.21.1` |
+| `--loader-version` | ❌ | Pin a specific loader version; defaults to latest |
+
+## How each modloader is fetched
+
+<Accordion title="Fabric">
+  JAVLI queries `https://meta.fabricmc.net/v2/versions/loader/<mc>` to list available loader versions, then retrieves the launch profile JSON from `https://meta.fabricmc.net/v2/versions/loader/<mc>/<loader-version>/profile/json`. The profile is written to disk and used directly at launch — no installer step is needed.
+</Accordion>
+
+<Accordion title="Quilt">
+  The same metadata-driven approach as Fabric. JAVLI calls `https://meta.quiltmc.org/v3/versions/loader/<mc>` to enumerate versions, then fetches the profile from `https://meta.quiltmc.org/v3/versions/loader/<mc>/<loader-version>/profile/json`.
+</Accordion>
+
+<Accordion title="Forge">
+  Forge ships as an installer JAR. JAVLI scrapes the Maven index at `https://maven.minecraftforge.net/net/minecraftforge/forge/` to find versions matching your Minecraft release (e.g. `1.20.1-47.3.0`), downloads the installer JAR, and runs it with `--installClient` to produce a ready-to-launch client profile.
+</Accordion>
+
+<Accordion title="NeoForge">
+  NeoForge versions follow a `<minor>.<patch>.x` convention tied to the Minecraft minor line (e.g. `21.1.x` for `1.21.1`). JAVLI scrapes `https://maven.neoforged.net/releases/net/neoforged/neoforge/`, filters to the matching prefix, and installs via the same installer-JAR workflow as Forge.
+</Accordion>
+
+## Local storage
+
+Loader files are cached under `~/.javli/loaders/` so they are only downloaded once per version combination.
+
+```
+~/.javli/loaders/
+├── fabric/
+│   └── 1.21.1/
+│       └── version.json
+├── quilt/
+│   └── 1.21.1/
+│       └── version.json
+├── forge/
+│   └── 1.20.1/
+│       └── 47.3.0/
+│           ├── forge-47.3.0-installer.jar
+│           └── client/
+└── neoforge/
+    └── 1.21.1/
+        └── 21.1.2/
+            ├── neoforge-21.1.2-installer.jar
+            └── client/
+```
+
+## Mutual exclusivity
+
+Only one modloader flag may be supplied per launch. The `--fabric`, `--quilt`, `--forge`, and `--neoforge` flags are declared in a mutually exclusive argument group, so passing more than one will produce an argument-parsing error before any download begins.
+
+```bash
+# ❌ This will error
+javli release 1.21.1 --fabric --forge
+
+# ✅ Pick exactly one
+javli release 1.21.1 --fabric
+```

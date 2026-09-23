@@ -1,0 +1,225 @@
+---
+title: "Managing Minecraft Instances with JAVLI"
+sidebarTitle: "Instances"
+description: "JAVLI instances isolate saves, mods, resource packs, and screenshots per profile. Create, launch, clone, and delete instances from the command line."
+---
+
+Instances give each Minecraft profile its own completely isolated directory, so saves, mods, resource packs, shader packs, and screenshots never bleed between profiles. Every instance you create is stored under `~/.javli/instances/<name>/` and carries a small `instance.json` metadata file that records the version, era, and source it was created with. You manage instances entirely from the command line — no GUI needed.
+
+## What an Instance Contains
+
+When you create an instance named `survival`, JAVLI creates the following layout:
+
+```text
+~/.javli/instances/survival/
+├── instance.json          ← metadata: name, era, version, source, path
+├── minecraft/             ← game data: worlds, options.txt, etc.
+├── mods/                  ← mod JARs (Fabric/Forge/NeoForge/Quilt)
+├── resourcepacks/         ← resource pack ZIPs
+├── shaderpacks/           ← shader pack ZIPs
+└── screenshots/           ← in-game screenshots
+```
+
+The `minecraft/` subdirectory is passed to the game as the `--gameDir` argument, so everything Minecraft writes (worlds, options, logs) lands inside the instance rather than in a shared directory.
+
+## Instance Naming Rules
+
+Instance names may only contain **letters, numbers, dots (`.`), underscores (`_`), and dashes (`-`)**. Spaces and special characters are not allowed.
+
+```text
+✅  survival
+✅  my-world
+✅  fabric_1.21
+✅  test.instance-01
+❌  my world        (space)
+❌  server/copy     (slash)
+```
+
+## Creating an Instance
+
+```bash
+javli instance create <name> <era> <version> [--source auto|mojang|omniarchive]
+```
+
+```bash
+# Create a vanilla 1.21.4 instance
+javli instance create survival release 1.21.4
+
+# Create a Beta instance sourced from Mojang
+javli instance create retro beta b1.7.3 --source mojang
+
+# Create a Classic instance from Omniarchive
+javli instance create classic-test classic c0.30 --source omniarchive
+```
+
+| Argument / Flag | Description |
+|----------------|-------------|
+| `<name>` | Unique instance name (letters, numbers, `.`, `_`, `-`) |
+| `<era>` | One of: `release`, `snapshot`, `beta`, `alpha`, `infdev`, `indev`, `classic`, `preclassic` |
+| `<version>` | Version string, e.g. `1.21.4`, `b1.7.3`, `c0.30` |
+| `--source` | `auto` (default), `mojang`, or `omniarchive` |
+
+## Launching an Instance
+
+```bash
+javli instance launch <name>
+```
+
+```bash
+javli instance launch survival
+```
+
+JAVLI reads `instance.json`, resolves and installs the version if needed, then starts Minecraft with the instance's `minecraft/` directory as the game directory.
+
+## Listing Instances
+
+```bash
+javli instance list
+```
+
+```text
+survival             release    1.21.4               auto
+retro                beta       b1.7.3               mojang
+classic-test         classic    c0.30                omniarchive
+```
+
+## Inspecting Instance Metadata
+
+```bash
+javli instance info <name>
+```
+
+Output is JSON, matching the contents of `instance.json`:
+
+```json
+{
+  "name": "survival",
+  "era": "release",
+  "version": "1.21.4",
+  "source": "auto",
+  "path": "/home/user/.javli/instances/survival"
+}
+```
+
+## Cloning an Instance
+
+```bash
+javli instance clone <name> <destination>
+```
+
+```bash
+javli instance clone survival survival-backup
+```
+
+The entire instance directory — including `minecraft/`, mods, resource packs, and screenshots — is copied to a new instance with the destination name. The cloned instance gets its own `instance.json` reflecting the new name and path.
+
+<Note>
+  The destination name must not already exist and must follow the same naming rules as any other instance.
+</Note>
+
+## Deleting an Instance
+
+```bash
+# Delete the instance and all its files
+javli instance delete <name>
+
+# Unregister the instance from JAVLI but keep the files on disk
+javli instance delete <name> --keep-files
+```
+
+```bash
+# Full removal (worlds, mods, screenshots, etc. are deleted)
+javli instance delete survival-backup
+
+# Remove from JAVLI's registry but preserve the directory
+javli instance delete survival --keep-files
+```
+
+<Warning>
+  Without `--keep-files`, the entire `~/.javli/instances/<name>/` directory is removed. This includes all world saves. Make a backup first if you need the data.
+</Warning>
+
+## Editing Instance Settings
+
+```bash
+javli instance set <name> <key> <value>
+```
+
+Three fields are editable after creation:
+
+| Key | Description |
+|-----|-------------|
+| `version` | Change the Minecraft version string |
+| `era` | Change the era (e.g. `release`, `beta`) |
+| `source` | Change the source (`auto`, `mojang`, `omniarchive`) |
+
+```bash
+# Update the version of an existing instance
+javli instance set survival version 1.21.5
+
+# Change the source
+javli instance set retro source omniarchive
+```
+
+Both the instance registry (`~/.javli/instances.json`) and the per-instance `instance.json` file are updated atomically.
+
+## Command Reference
+
+<Accordion title="javli instance create <name> <era> <version> [--source]">
+  Create a new isolated instance with its own game directory.
+
+  ```bash
+  javli instance create my-world release 1.21.4
+  javli instance create old-school beta b1.7.3 --source mojang
+  ```
+</Accordion>
+
+<Accordion title="javli instance launch <name>">
+  Launch Minecraft from the specified instance's game directory.
+
+  ```bash
+  javli instance launch my-world
+  ```
+</Accordion>
+
+<Accordion title="javli instance list">
+  Print all registered instances with their era, version, and source.
+
+  ```bash
+  javli instance list
+  ```
+</Accordion>
+
+<Accordion title="javli instance info <name>">
+  Print the instance's metadata as JSON.
+
+  ```bash
+  javli instance info my-world
+  ```
+</Accordion>
+
+<Accordion title="javli instance clone <name> <destination>">
+  Copy an instance and all its files to a new name.
+
+  ```bash
+  javli instance clone my-world my-world-backup
+  ```
+</Accordion>
+
+<Accordion title="javli instance delete <name> [--keep-files]">
+  Delete an instance. Pass `--keep-files` to keep the directory on disk.
+
+  ```bash
+  javli instance delete my-world-backup
+  javli instance delete my-world --keep-files
+  ```
+</Accordion>
+
+<Accordion title="javli instance set <name> <key> <value>">
+  Update an editable field (`version`, `era`, or `source`) on an existing instance.
+
+  ```bash
+  javli instance set my-world version 1.21.5
+  javli instance set my-world era snapshot
+  ```
+</Accordion>

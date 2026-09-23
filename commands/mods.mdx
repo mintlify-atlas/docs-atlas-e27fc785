@@ -1,0 +1,382 @@
+---
+title: "javli mods / modpack / loader — Mod Commands"
+sidebarTitle: "mods"
+description: "Install mods, modpacks, resource packs, shaders, and modloaders with JAVLI. Covers mods, modpack, loader, resourcepack, and shader subcommands."
+---
+
+JAVLI integrates with Modrinth to let you search, install, and remove mods, modpacks, resource packs, and shaders directly from the command line. The `javli loader` command installs a standalone modloader (Fabric, Forge, NeoForge, or Quilt) for a given Minecraft version without immediately launching the game. All mod and content installs are scoped to a named instance.
+
+---
+
+## javli mods
+
+The `mods` command manages individual Modrinth mods for a named instance.
+
+### javli mods search
+
+Search Modrinth for mods matching a query. Optionally filter by Minecraft version and modloader.
+
+#### Syntax
+
+```bash
+javli mods search <query> [--minecraft <version>] [--loader <loader>] [--limit <n>]
+```
+
+#### Examples
+
+```bash
+# Search for Sodium
+javli mods search sodium
+
+# Filter by Minecraft version and loader
+javli mods search sodium --minecraft 1.21.1 --loader fabric
+
+# Return up to 25 results
+javli mods search "performance" --minecraft 1.21.1 --limit 25
+```
+
+#### Arguments and flags
+
+<ParamField path="query" type="string" required>
+  The search term to send to Modrinth. Can be a mod name, project ID, or keyword.
+</ParamField>
+
+<ParamField query="--minecraft" type="string">
+  Filter results to mods compatible with this Minecraft version (e.g. `1.21.1`).
+</ParamField>
+
+<ParamField query="--loader" type="string">
+  Filter results to mods compatible with this modloader (e.g. `fabric`, `forge`, `neoforge`, `quilt`).
+</ParamField>
+
+<ParamField query="--limit" type="integer" default="10">
+  Maximum number of search results to display.
+</ParamField>
+
+---
+
+### javli mods install
+
+Download and install a mod from Modrinth into a named instance. Dependencies are resolved and installed automatically unless `--no-deps` is passed.
+
+#### Syntax
+
+```bash
+javli mods install <project> --instance <name> [--minecraft <version>] [--loader <loader>] [--no-deps]
+```
+
+#### Examples
+
+```bash
+# Install Sodium into the "survival" instance
+javli mods install sodium --instance survival --loader fabric
+
+# Install a mod without pulling its dependencies
+javli mods install iris --instance survival --loader fabric --no-deps
+
+# Specify the Minecraft version explicitly
+javli mods install sodium --instance survival --minecraft 1.21.1 --loader fabric
+```
+
+#### Arguments and flags
+
+<ParamField path="project" type="string" required>
+  The Modrinth project ID or slug of the mod to install (e.g. `sodium`, `AANobbMI`).
+</ParamField>
+
+<ParamField query="--instance" type="string" required>
+  The name of the instance to install the mod into.
+</ParamField>
+
+<ParamField query="--minecraft" type="string">
+  Minecraft version to use when selecting the correct mod file from Modrinth.
+</ParamField>
+
+<ParamField query="--loader" type="string">
+  Modloader to use when selecting the correct mod file (e.g. `fabric`, `forge`).
+</ParamField>
+
+<ParamField query="--no-deps" type="boolean">
+  Skip automatic dependency resolution. Only the requested mod file will be installed.
+</ParamField>
+
+---
+
+### javli mods remove
+
+Remove an installed mod from a named instance by name.
+
+#### Syntax
+
+```bash
+javli mods remove <name> --instance <name>
+```
+
+#### Example
+
+```bash
+javli mods remove sodium --instance survival
+```
+
+#### Arguments and flags
+
+<ParamField path="name" type="string" required>
+  The filename or name of the mod to remove from the instance's mods directory.
+</ParamField>
+
+<ParamField query="--instance" type="string" required>
+  The name of the instance to remove the mod from.
+</ParamField>
+
+---
+
+### javli mods list
+
+List all mod files currently installed in a named instance.
+
+#### Syntax
+
+```bash
+javli mods list --instance <name>
+```
+
+#### Example
+
+```bash
+javli mods list --instance survival
+```
+
+#### Arguments and flags
+
+<ParamField query="--instance" type="string" required>
+  The name of the instance whose mod list to display.
+</ParamField>
+
+---
+
+## javli modpack
+
+The `modpack` command searches for and installs Modrinth modpacks into an existing instance.
+
+### javli modpack search
+
+Search Modrinth for modpacks matching a query.
+
+#### Syntax
+
+```bash
+javli modpack search <query> [--minecraft <version>] [--loader <loader>] [--limit <n>]
+```
+
+#### Example
+
+```bash
+javli modpack search "fabulously optimized"
+javli modpack search "all of fabric" --minecraft 1.21.1 --loader fabric
+```
+
+#### Arguments and flags
+
+<ParamField path="query" type="string" required>
+  The search term to send to Modrinth.
+</ParamField>
+
+<ParamField query="--minecraft" type="string">
+  Filter by compatible Minecraft version.
+</ParamField>
+
+<ParamField query="--loader" type="string">
+  Filter by compatible modloader.
+</ParamField>
+
+<ParamField query="--limit" type="integer" default="10">
+  Maximum number of results to display.
+</ParamField>
+
+---
+
+### javli modpack install
+
+Download and install a Modrinth modpack into an existing instance. JAVLI reads the pack's `modrinth.index.json` and installs the declared files.
+
+#### Syntax
+
+```bash
+javli modpack install <project> --instance <name>
+```
+
+#### Example
+
+```bash
+javli modpack install fabulously-optimized --instance survival
+```
+
+#### Arguments and flags
+
+<ParamField path="project" type="string" required>
+  The Modrinth project ID or slug of the modpack to install.
+</ParamField>
+
+<ParamField query="--instance" type="string" required>
+  The name of the instance to install the modpack into.
+</ParamField>
+
+---
+
+## javli loader
+
+Install a modloader for a given Minecraft version without launching the game. This is useful for setting up an instance's profile before adding mods.
+
+### Syntax
+
+```bash
+javli loader <fabric|forge|neoforge|quilt> <minecraft-version> [--loader-version <version>]
+```
+
+### Examples
+
+```bash
+# Install the latest Fabric for Minecraft 1.21.1
+javli loader fabric 1.21.1
+
+# Install a specific Forge version
+javli loader forge 1.20.1 --loader-version 47.3.0
+
+# Install NeoForge
+javli loader neoforge 1.21.1
+
+# Install Quilt
+javli loader quilt 1.21.1
+```
+
+### Arguments and flags
+
+<ParamField path="loader" type="string" required>
+  The modloader to install. Must be one of: `fabric`, `forge`, `neoforge`, `quilt`.
+</ParamField>
+
+<ParamField path="minecraft" type="string" required>
+  The Minecraft version to install the modloader for (e.g. `1.21.1`, `1.20.1`).
+</ParamField>
+
+<ParamField query="--loader-version" type="string">
+  Pin a specific modloader release instead of using the latest stable version.
+</ParamField>
+
+---
+
+## javli resourcepack
+
+Search, install, list, and remove Modrinth resource packs for an instance.
+
+### Syntax
+
+```bash
+javli resourcepack search <query> [--minecraft <version>] [--limit <n>]
+javli resourcepack install <project> --instance <name>
+javli resourcepack list --instance <name>
+javli resourcepack remove <name> --instance <name>
+```
+
+### Examples
+
+```bash
+# Search for resource packs
+javli resourcepack search "faithful" --minecraft 1.21.1
+
+# Install a resource pack into an instance
+javli resourcepack install faithful-32x --instance survival
+
+# List installed resource packs
+javli resourcepack list --instance survival
+
+# Remove a resource pack
+javli resourcepack remove faithful-32x --instance survival
+```
+
+### Arguments and flags
+
+<ParamField path="query" type="string" required>
+  Search term (required for `search` subcommand).
+</ParamField>
+
+<ParamField path="project" type="string" required>
+  Modrinth project ID or slug (required for `install` subcommand).
+</ParamField>
+
+<ParamField path="name" type="string" required>
+  Name of the installed resource pack file to remove (required for `remove` subcommand).
+</ParamField>
+
+<ParamField query="--instance" type="string" required>
+  The name of the instance (required for `install`, `list`, and `remove` subcommands).
+</ParamField>
+
+<ParamField query="--minecraft" type="string">
+  Filter search results by compatible Minecraft version.
+</ParamField>
+
+<ParamField query="--limit" type="integer" default="10">
+  Maximum number of search results to display.
+</ParamField>
+
+---
+
+## javli shader
+
+Search, install, list, and remove Modrinth shaders for an instance. The `shader` command has exactly the same subcommands and flags as `javli resourcepack`.
+
+### Syntax
+
+```bash
+javli shader search <query> [--minecraft <version>] [--limit <n>]
+javli shader install <project> --instance <name>
+javli shader list --instance <name>
+javli shader remove <name> --instance <name>
+```
+
+### Examples
+
+```bash
+# Search for shaders
+javli shader search "complementary" --minecraft 1.21.1
+
+# Install a shader pack
+javli shader install complementary-reimagined --instance survival
+
+# List installed shaders
+javli shader list --instance survival
+
+# Remove a shader
+javli shader remove complementary-reimagined --instance survival
+```
+
+### Arguments and flags
+
+<ParamField path="query" type="string" required>
+  Search term (required for `search` subcommand).
+</ParamField>
+
+<ParamField path="project" type="string" required>
+  Modrinth project ID or slug (required for `install` subcommand).
+</ParamField>
+
+<ParamField path="name" type="string" required>
+  Name of the installed shader file to remove (required for `remove` subcommand).
+</ParamField>
+
+<ParamField query="--instance" type="string" required>
+  The name of the instance (required for `install`, `list`, and `remove` subcommands).
+</ParamField>
+
+<ParamField query="--minecraft" type="string">
+  Filter search results by compatible Minecraft version.
+</ParamField>
+
+<ParamField query="--limit" type="integer" default="10">
+  Maximum number of search results to display.
+</ParamField>
+
+<Note>
+  Shaders require a compatible shader loader mod (such as Iris or Oculus) to be installed in the instance. JAVLI installs the shader pack file but does not verify that a shader loader is present.
+</Note>

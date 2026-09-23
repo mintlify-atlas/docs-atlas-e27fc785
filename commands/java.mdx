@@ -1,0 +1,127 @@
+---
+title: "javli java — Java Runtime Commands"
+sidebarTitle: "java"
+description: "Manage Java runtimes with javli java. Install Java 8, 17, 21, or 25 via Adoptium, list installed versions, and print executable paths."
+---
+
+JAVLI can automatically select the correct Java runtime for each Minecraft version using metadata embedded in the version manifest. The `javli java` command lets you install managed Java runtimes from Adoptium, list what is already available on your system, and print the path to a managed executable so you can use it in scripts or other tools.
+
+Managed runtimes are stored under `~/.javli/runtimes/` and are entirely separate from any system-wide Java installation.
+
+---
+
+## javli java list
+
+List both system-detected Java installations and JAVLI-managed runtimes.
+
+### Syntax
+
+```bash
+javli java list
+```
+
+### Example output
+
+```
+system  Java 21  /usr/lib/jvm/java-21-openjdk-amd64/bin/java
+managed java-8   /home/user/.javli/runtimes/java-8/bin/java
+managed java-17  /home/user/.javli/runtimes/java-17/bin/java
+```
+
+<Tip>
+  Run `javli java list` after installing a new runtime to confirm it is available before launching a Minecraft version that requires it.
+</Tip>
+
+---
+
+## javli java install
+
+Download and install a managed Java runtime from Adoptium. Supported major versions are **8**, **17**, **21**, and **25**.
+
+### Syntax
+
+```bash
+javli java install <major> [--force]
+```
+
+### Examples
+
+```bash
+# Install Java 8 (required for old Minecraft versions)
+javli java install 8
+
+# Install Java 17 (required for Minecraft 1.18–1.20)
+javli java install 17
+
+# Install Java 21 (required for Minecraft 1.21+)
+javli java install 21
+
+# Re-install Java 21 even if already present
+javli java install 21 --force
+```
+
+### Arguments and flags
+
+<ParamField path="major" type="integer" required>
+  The Java major version to install. Must be one of `8`, `17`, `21`, or `25`.
+</ParamField>
+
+<ParamField query="--force" type="boolean">
+  Re-download and reinstall the runtime even if a managed installation for that major version already exists.
+</ParamField>
+
+---
+
+## javli java path
+
+Print the absolute path to the Java executable for a specific managed major version. Exits with an error if that version has not been installed yet.
+
+### Syntax
+
+```bash
+javli java path <major>
+```
+
+### Examples
+
+```bash
+# Print the path to the managed Java 17 executable
+javli java path 17
+# Output: /home/user/.javli/runtimes/java-17/bin/java
+
+# Use in a script
+JAVA_BIN=$(javli java path 21)
+"$JAVA_BIN" -version
+```
+
+### Arguments
+
+<ParamField path="major" type="integer" required>
+  The Java major version whose executable path to print. Must be one of `8`, `17`, `21`, or `25`.
+</ParamField>
+
+---
+
+## Environment variables
+
+JAVLI respects two environment variables that let you override the Java executable it uses at launch time, without modifying any stored configuration.
+
+<ParamField query="MCLI_JAVA" type="string">
+  Path to a Java executable that JAVLI should use for **modern** Minecraft versions instead of the auto-selected runtime. The path must exist on disk; if it does not, JAVLI falls back to its normal selection logic.
+
+  ```bash
+  MCLI_JAVA=/usr/lib/jvm/java-21/bin/java javli release 1.21.1
+  ```
+</ParamField>
+
+<ParamField query="MCLI_LEGACY_JAVA" type="string">
+  Path to a Java executable that JAVLI should use for **legacy** (pre-1.17) Minecraft versions instead of the auto-selected runtime. Set this if you have a custom Java 8 build you want to use for older versions.
+
+  ```bash
+  MCLI_LEGACY_JAVA=/opt/java8/bin/java javli beta b1.7.3
+  ```
+</ParamField>
+
+<Note>
+  When both an environment variable and a managed runtime are available, the environment variable takes precedence. This is useful for CI environments or when you need a specific JVM flags profile.
+</Note>

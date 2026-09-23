@@ -1,0 +1,150 @@
+---
+title: "JAVLI Builds, Releases, and Packaging"
+sidebarTitle: "Builds & Releases"
+description: "JAVLI ships prebuilt standalone binaries for six OS/architecture targets via GitHub Actions. Trigger builds by pushing a version tag or running the workflow manually."
+---
+
+JAVLI ships as standalone executable binaries — single files that bundle the Python interpreter and all Python dependencies. Users need only Java (which JAVLI manages automatically) and do not need to install Python, pip, or any other runtime. Binaries are produced by a GitHub Actions workflow (`Build JAVLI binaries`) that runs on every pushed commit and can also be triggered manually.
+
+## Build Targets
+
+The workflow produces six binaries covering the primary desktop OS and architecture combinations:
+
+| Target | OS | Architecture | Archive format |
+|---|---|---|---|
+| Windows x64 | Windows | x86-64 | `.zip` |
+| Windows x86 | Windows | x86 (32-bit) | `.zip` |
+| Linux x64 | Linux | x86-64 | `.tar.gz` |
+| Linux x86 | Linux | x86 (32-bit) | `.tar.gz` |
+| macOS Intel | macOS | x86-64 | `.tar.gz` |
+| macOS Apple Silicon | macOS | ARM64 | `.tar.gz` |
+
+Each archive contains the `javli` (or `javli.exe`) executable and `README.md`.
+
+<Note>
+  JAVLI has been primarily tested on Windows x64. Other targets may encounter
+  issues — please report any problems on the GitHub issue tracker.
+</Note>
+
+## GitHub Actions Workflow
+
+The workflow is defined at `.github/workflows/build-all.yml` and runs on two triggers:
+
+<CardGroup cols={2}>
+  <Card title="Version tag push" icon="tag">
+    Push a tag matching `v*` (e.g. `v1.0.1`) to trigger a full build. All six
+    binaries are built, uploaded as Actions artifacts, and attached to a new
+    GitHub Release named after the tag.
+  </Card>
+  <Card title="Manual dispatch" icon="play">
+    Select **Build JAVLI binaries** in the Actions tab and click **Run
+    workflow** to trigger a build without tagging. Binaries are uploaded as
+    workflow artifacts but a release is created with a `manual-<run-number>`
+    tag rather than a semantic version.
+  </Card>
+</CardGroup>
+
+### What the workflow does
+
+<Steps>
+  <Step title="Matrix build">
+    Six parallel jobs run — one per target. Each job sets up the correct Python
+    version and architecture for its platform, installs JAVLI and its
+    dependencies, then calls `python scripts/build_binary.py` to produce the
+    standalone executable using PyInstaller.
+  </Step>
+  <Step title="Linux 32-bit special case">
+    The Linux x86 build runs inside an `i386/debian:bookworm` Docker container
+    (via `docker run --platform linux/386`) because GitHub-hosted runners are
+    x64-only. The container installs Python 3, creates a virtual environment,
+    and runs the build script inside it.
+  </Step>
+  <Step title="Smoke test">
+    After the binary is produced (for non-container builds), the workflow runs
+    `javli --help` against the compiled executable to verify it starts
+    successfully.
+  </Step>
+  <Step title="Package">
+    Windows jobs zip the executable and README into `javli-windows-<arch>.zip`.
+    Unix jobs produce `javli-<platform>-<arch>.tar.gz`.
+  </Step>
+  <Step title="Upload artifacts">
+    Each job uploads its archive as a GitHub Actions artifact. Artifacts are
+    accessible from the workflow run page for any build, tagged or untagged.
+  </Step>
+  <Step title="Publish release">
+    A final `release` job (which depends on all build jobs) downloads all six
+    artifacts and either creates a new GitHub Release or uploads assets to an
+    existing one.
+
+    - **Tagged build:** the release is created under the pushed tag (e.g. `v1.0.1`) with auto-generated release notes.
+    - **Manual build:** the release is created under `manual-<run-number>`.
+  </Step>
+</Steps>
+
+## Triggering a Tagged Release
+
+To publish a versioned release:
+
+```bash
+git tag v1.0.1
+git push origin v1.0.1
+```
+
+The workflow starts automatically. When all six build jobs succeed, a GitHub Release named **JAVLI v1.0.1** is created with all six binaries attached.
+
+## Building Locally
+
+You can produce a standalone binary on your own machine using the same build script the workflow calls:
+
+```bash
+# Install JAVLI and PyInstaller
+python -m pip install -e .
+python -m pip install "pyinstaller>=6.16,<7"
+
+# Build the binary
+python scripts/build_binary.py
+```
+
+The output executable is placed in `dist/javli` (or `dist/javli.exe` on Windows). Run it directly:
+
+```bash
+./dist/javli --help
+```
+
+## Updating the Running Binary
+
+Once you have a standalone JAVLI binary, you can update it to the latest GitHub Release without visiting the browser:
+
+```bash
+javli update
+```
+
+`javli update` fetches the latest release from the GitHub API, downloads the appropriate archive for the current platform and architecture, extracts the new binary, and replaces the running executable in place.
+
+<Warning>
+  `javli update` requires a standalone release binary. It will refuse to run
+  on a source installation (`pip install -e .`) with the message:
+
+  > `mcli update is for standalone release binaries. Source installs should update with git/pip.`
+
+  For source installs, update with `git pull` and `pip install -e .`.
+</Warning>
+
+## Linux Package Formats
+
+The `packaging/` directory in the JAVLI repository contains templates for distribution-native package formats:
+
+<CardGroup cols={3}>
+  <Card title="Arch Linux" icon="box">
+    `packaging/arch/PKGBUILD` — build a pacman package with `makepkg`.
+  </Card>
+  <Card title="Debian / Ubuntu" icon="box">
+    `packaging/debian/control` — Debian control file for `dpkg-deb`.
+  </Card>
+  <Card title="Fedora / RHEL" icon="box">
+    `packaging/rpm/mcli.spec` — RPM spec file for `rpmbuild`.
+  </Card>
+</CardGroup>
+
+These are community packaging templates. The GitHub Actions workflow does not build `.deb` or `.rpm` packages automatically; they are provided for maintainers who want to package JAVLI for their distribution's repositories.

@@ -1,0 +1,156 @@
+---
+title: "javli login / account — Account Commands"
+sidebarTitle: "account"
+description: "Manage Microsoft accounts with javli login and javli account. Log in, switch active accounts, refresh tokens, and remove accounts."
+---
+
+JAVLI uses Microsoft OAuth to authenticate with Minecraft. The `javli login` command opens a browser-based login flow and saves a named account entry under `~/.javli/accounts.json`. The `javli account` command lets you list saved accounts, switch which one is active, refresh expired tokens, and remove accounts you no longer need.
+
+<Warning>
+  `~/.javli/accounts.json` may contain Microsoft authentication refresh tokens. Treat this file as sensitive and never share it.
+</Warning>
+
+---
+
+## javli login
+
+Authenticate with a Microsoft account and save it to JAVLI's account store. If no `--alias` is provided, the account is saved under the Minecraft username returned by Microsoft.
+
+### Syntax
+
+```bash
+javli login [--alias <name>]
+```
+
+### Examples
+
+```bash
+# Log in and save under the Minecraft username
+javli login
+
+# Log in and save under a custom alias
+javli login --alias main
+javli login --alias alt
+```
+
+### Arguments and flags
+
+<ParamField query="--alias" type="string">
+  A short name to identify this account in JAVLI. If omitted, the account is stored under the Minecraft username. Use distinct aliases when you manage multiple accounts.
+</ParamField>
+
+---
+
+## javli account
+
+Manage all saved Microsoft accounts. Running `javli account` with no subcommand is equivalent to `javli account show`.
+
+### javli account list
+
+List every saved account. The active account is marked with `*`.
+
+```bash
+javli account list
+```
+
+**Example output:**
+
+```
+* main               Steve               xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  alt                Alex                yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy
+```
+
+---
+
+### javli account show
+
+Print the currently active account name and UUID. This is the default when `javli account` is run without a subcommand.
+
+```bash
+javli account show
+javli account          # equivalent
+```
+
+---
+
+### javli account use
+
+Switch the active account to the one identified by `<alias>`.
+
+```bash
+javli account use <alias>
+```
+
+#### Arguments
+
+<ParamField path="alias" type="string" required>
+  The alias of the account to make active. Must match an alias shown by `javli account list`.
+</ParamField>
+
+#### Example
+
+```bash
+javli account use main
+```
+
+---
+
+### javli account refresh
+
+Refresh the Microsoft access token for the active account, or for a specific account by alias.
+
+```bash
+javli account refresh [--alias <alias>]
+```
+
+#### Arguments and flags
+
+<ParamField query="--alias" type="string">
+  Refresh the token for this specific alias instead of the currently active account.
+</ParamField>
+
+#### Example
+
+```bash
+# Refresh the active account
+javli account refresh
+
+# Refresh a specific account
+javli account refresh --alias alt
+```
+
+---
+
+### javli account remove
+
+Remove a saved account from JAVLI's store by alias. The account's tokens are deleted from `accounts.json`.
+
+```bash
+javli account remove <alias>
+```
+
+#### Arguments
+
+<ParamField path="alias" type="string" required>
+  The alias of the account to remove.
+</ParamField>
+
+#### Example
+
+```bash
+javli account remove alt
+```
+
+---
+
+### javli account logout
+
+Remove the currently active account from JAVLI. This is equivalent to removing the active account by alias.
+
+```bash
+javli account logout
+```
+
+<Note>
+  `javli account logout` only removes the account from JAVLI's local store. It does not revoke the Microsoft OAuth token on Microsoft's servers.
+</Note>

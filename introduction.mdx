@@ -1,0 +1,121 @@
+---
+title: "JAVLI: Minecraft Command-Line Launcher"
+sidebarTitle: "Introduction"
+description: "JAVLI is a CLI launcher for Minecraft Java Edition. Launch any version, manage accounts, Java runtimes, instances, mods, and servers from your terminal."
+---
+
+JAVLI is a Python-based command-line launcher for Minecraft Java Edition. It covers the full lifecycle of playing and hosting Minecraft — from authenticating your Microsoft account and downloading the right Java runtime, to launching modded instances, searching Modrinth for mods, and spinning up game servers — all without leaving the terminal.
+
+```bash
+$ javli release 1.21.1
+$ javli beta b1.7.3
+$ javli classic c0.30
+```
+
+<Warning>
+  JAVLI has been tested primarily on **Windows 64-bit**. It may not behave as expected on other operating systems. Please [report issues on GitHub](https://github.com/Hampter588/JAVLI/issues) if you encounter problems.
+</Warning>
+
+## Version Sources
+
+JAVLI pulls version metadata and game artifacts from two independent sources:
+
+- **Mojang** — The official Minecraft version manifest. Provides clients, libraries, assets, and server artifacts for every modern and legacy release published by Mojang.
+- **Omniarchive** — A community-maintained archive of historically preserved Minecraft builds, including builds that predate or fall outside the official Mojang manifest.
+
+Both sources can be queried simultaneously (the default `auto` mode) or individually with `--source mojang` / `--source omniarchive`.
+
+## Supported Eras
+
+JAVLI recognises all eight Minecraft eras as first-class launch targets:
+
+| Era | Command | Examples |
+|---|---|---|
+| Release | `javli release <version>` | `1.21.1`, `1.20.4` |
+| Snapshot | `javli snapshot <version>` | `25w14craftmine` |
+| Beta | `javli beta <version>` | `b1.7.3` |
+| Alpha | `javli alpha <version>` | `a1.2.6` |
+| Infdev | `javli infdev <version>` | `infdev-20100227` |
+| Indev | `javli indev <version>` | `indev-20100212` |
+| Classic | `javli classic <version>` | `c0.30` |
+| Pre-Classic | `javli preclassic <version>` | `rd-132211` |
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Microsoft Authentication" icon="user-shield" href="/accounts">
+    Sign in with your Microsoft account using the device-code OAuth flow. Manage multiple accounts and switch between them with a single command.
+  </Card>
+  <Card title="Managed Java Runtimes" icon="java" href="/java-runtimes">
+    JAVLI automatically selects and installs the correct Java version (8, 17, 21, or 25) via Adoptium — no manual JDK management required.
+  </Card>
+  <Card title="Isolated Instances" icon="box" href="/instances">
+    Each named instance gets its own directory for saves, configs, mods, resource packs, and screenshots. Clone, delete, or run multiple instances independently.
+  </Card>
+  <Card title="Modloaders" icon="puzzle-piece" href="/mods">
+    Launch with Fabric, Quilt, Forge, or NeoForge directly from the launch command using `--fabric`, `--quilt`, `--forge`, or `--neoforge`.
+  </Card>
+  <Card title="Modrinth Integration" icon="cube" href="/mods">
+    Search and install mods, modpacks, resource packs, and shaders from Modrinth into any named instance. Dependency resolution is handled automatically.
+  </Card>
+  <Card title="Server Management" icon="server" href="/servers">
+    Create and manage vanilla or Paper Minecraft servers. Configure memory, accept the EULA, start/stop servers, and check their running status.
+  </Card>
+</CardGroup>
+
+## Prebuilt Standalone Binaries
+
+JAVLI ships prebuilt executables for the six primary desktop targets. Each binary bundles Python and all Python dependencies — users do not need to install Python separately. Minecraft's Java runtimes are still managed by JAVLI at runtime.
+
+| Platform | Architecture |
+|---|---|
+| Windows | x64 |
+| Windows | ARM64 |
+| Linux | x64 |
+| Linux | ARM64 |
+| macOS (Intel) | x86\_64 |
+| macOS (Apple Silicon) | ARM64 |
+
+Download binaries from the [GitHub Releases page](https://github.com/Hampter588/JAVLI/releases), or trigger the **Build JAVLI binaries** workflow manually from GitHub Actions. Tagged releases (e.g. `v1.0.1`) are attached automatically to the corresponding GitHub Release.
+
+## Project Status
+
+JAVLI 1.0 contains the major launcher architecture and feature set, but should be treated as an early project until launch paths have been extensively tested across Minecraft versions, operating systems, Java runtimes, and modloader combinations. Historical builds can require version-specific compatibility work.
+
+## Roadmap
+
+The following features are planned for future releases:
+
+- **CurseForge integration** — browse and install CurseForge mods and modpacks
+- **Mod updates & compatibility management** — detect and apply mod updates
+- **Import from Prism/MultiMC** — migrate existing instances and `.minecraft` directories
+- **Download progress, retries, and resume** — resilient downloads with visible feedback
+- **Crash diagnostics and `javli doctor`** — automatically diagnose launch failures
+- **Server console and backups** — interactive server console and automated backup tooling
+- **Stronger historical compatibility profiles** — improved support for pre-Alpha builds
+- **Packaged Windows/macOS/Linux releases** — distribution via package managers
+
+## Data Directory
+
+All JAVLI data lives under `~/.javli/`:
+
+```text
+~/.javli/
+├── accounts.json     ← sensitive: contains authentication refresh tokens
+├── assets/
+├── cache/
+├── instances/
+├── libraries/
+├── loaders/
+├── runtimes/
+├── servers/
+└── versions/
+```
+
+<Warning>
+  Treat `~/.javli/accounts.json` as a sensitive file. It may contain Microsoft OAuth refresh tokens.
+</Warning>
+
+## Disclaimer
+
+JAVLI is an independent project and is not affiliated with, endorsed by, or sponsored by Mojang Studios or Microsoft. Minecraft is a trademark of Microsoft Corporation.

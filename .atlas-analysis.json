@@ -1,0 +1,110 @@
+{
+  "projectType": "cli-tool",
+  "projectName": "JAVLI",
+  "projectDescription": "A command-line Minecraft Java launcher that manages versions, Microsoft accounts, Java runtimes, instances, modloaders, Modrinth content, and servers from a single CLI.",
+  "theme": "aspen",
+  "primaryColor": "#2D7D46",
+  "lightColor": "#4CAF70",
+  "darkColor": "#1A5C30",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "installation",
+              "quickstart"
+            ]
+          },
+          {
+            "group": "Core Usage",
+            "pages": [
+              "launching",
+              "accounts",
+              "java-runtimes",
+              "instances"
+            ]
+          },
+          {
+            "group": "Mods & Content",
+            "pages": [
+              "modloaders",
+              "mods",
+              "modpacks",
+              "resource-packs-shaders"
+            ]
+          },
+          {
+            "group": "Servers",
+            "pages": [
+              "servers"
+            ]
+          },
+          {
+            "group": "Reference",
+            "pages": [
+              "versions-sources",
+              "data-directory",
+              "configuration",
+              "builds-releases"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Command Reference",
+        "groups": [
+          {
+            "group": "Commands",
+            "pages": [
+              "commands/overview",
+              "commands/launch",
+              "commands/account",
+              "commands/java",
+              "commands/instance",
+              "commands/mods",
+              "commands/server",
+              "commands/versions"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Launch any Minecraft version (release, snapshot, beta, alpha, infdev, indev, classic, pre-classic) from the command line",
+    "Microsoft account authentication via device code flow with multi-account support",
+    "Automatic Java runtime management via Eclipse Adoptium (Java 8, 17, 21, 25)",
+    "Isolated game instances with separate saves, mods, resource packs, and screenshots",
+    "Modloader support: Fabric, Quilt, Forge, and NeoForge",
+    "Modrinth integration for mods, modpacks, resource packs, and shaders",
+    "Vanilla and Paper server lifecycle management",
+    "Omniarchive source for preserved historical Minecraft builds",
+    "Standalone prebuilt binaries for Windows, Linux, and macOS (x64 and ARM64)"
+  ],
+  "publicApiSurface": [
+    "javli release <version>",
+    "javli beta <version>",
+    "javli alpha <version>",
+    "javli classic <version>",
+    "javli snapshot <version>",
+    "javli login [--alias <name>]",
+    "javli account list|use|refresh|remove|logout",
+    "javli java list|install|path",
+    "javli instance create|list|launch|clone|delete|set|info",
+    "javli mods search|install|remove|list",
+    "javli modpack search|install",
+    "javli resourcepack search|install|list|remove",
+    "javli shader search|install|list|remove",
+    "javli server create|list|start|stop|status|eula|delete|get|set",
+    "javli versions [--historical] [--source] [--type]",
+    "javli search <query>",
+    "javli info <version>",
+    "javli stats",
+    "javli random [--historical] [--source] [--type] [--dry-run]",
+    "javli update"
+  ]
+}

@@ -1,0 +1,232 @@
+---
+title: "javli instance — Instance Management Commands"
+sidebarTitle: "instance"
+description: "Create, launch, clone, and delete isolated Minecraft instances with javli instance. Each instance has separate saves, mods, and configuration."
+---
+
+Instances give each Minecraft setup its own isolated directory for saves, settings, configuration files, mods, resource packs, and screenshots. This means you can keep a vanilla survival world, a modded Fabric profile, and a historical Beta build completely separate on the same machine. The `javli instance` command handles the full lifecycle: create, list, inspect, launch, clone, configure, and delete.
+
+Instance data is stored under `~/.javli/instances/<name>/`.
+
+---
+
+## javli instance create
+
+Create a new named instance for a specific Minecraft version and era.
+
+### Syntax
+
+```bash
+javli instance create <name> <era> <version> [--source auto|mojang|omniarchive]
+```
+
+### Examples
+
+```bash
+# Create a release instance
+javli instance create survival release 1.21.1
+
+# Create a Beta instance sourced from Omniarchive
+javli instance create beta-world beta b1.7.3 --source omniarchive
+
+# Create a Classic instance
+javli instance create classic-test classic c0.30
+```
+
+### Arguments and flags
+
+<ParamField path="name" type="string" required>
+  A unique name for this instance. Used to reference the instance in all other subcommands.
+</ParamField>
+
+<ParamField path="era" type="string" required>
+  The Minecraft era this instance targets. Must be one of: `release`, `snapshot`, `beta`, `alpha`, `infdev`, `indev`, `classic`, `preclassic`.
+</ParamField>
+
+<ParamField path="version" type="string" required>
+  The exact Minecraft version ID for this instance. Must match an ID available in the version catalog (see `javli versions`).
+</ParamField>
+
+<ParamField query="--source" type="string" default="auto">
+  Version catalog source to use when resolving and installing the version.
+
+  - `auto` — try both Mojang and Omniarchive (default)
+  - `mojang` — Mojang official manifest only
+  - `omniarchive` — Omniarchive historical archive only
+</ParamField>
+
+---
+
+## javli instance list
+
+Print a table of all saved instances with their era, version, and source.
+
+### Syntax
+
+```bash
+javli instance list
+```
+
+### Example output
+
+```
+survival             release    1.21.1               mojang
+beta-world           beta       b1.7.3               omniarchive
+classic-test         classic    c0.30                omniarchive
+```
+
+---
+
+## javli instance info
+
+Print full JSON metadata for a named instance, including its path on disk.
+
+### Syntax
+
+```bash
+javli instance info <name>
+```
+
+### Arguments
+
+<ParamField path="name" type="string" required>
+  The name of the instance to inspect.
+</ParamField>
+
+### Example
+
+```bash
+javli instance info survival
+```
+
+---
+
+## javli instance launch
+
+Launch Minecraft using the settings and game directory of a named instance.
+
+### Syntax
+
+```bash
+javli instance launch <name>
+```
+
+### Arguments
+
+<ParamField path="name" type="string" required>
+  The name of the instance to launch.
+</ParamField>
+
+### Example
+
+```bash
+javli instance launch survival
+```
+
+<Note>
+  When launching a legacy (Omniarchive) instance, JAVLI automatically uses the legacy launch path. Modern instances use the standard Mojang launcher profile.
+</Note>
+
+---
+
+## javli instance clone
+
+Duplicate an existing instance under a new name, copying all its files and configuration.
+
+### Syntax
+
+```bash
+javli instance clone <name> <destination>
+```
+
+### Arguments
+
+<ParamField path="name" type="string" required>
+  The name of the source instance to clone.
+</ParamField>
+
+<ParamField path="destination" type="string" required>
+  The name of the new instance that will be created as a copy.
+</ParamField>
+
+### Example
+
+```bash
+javli instance clone survival survival-backup
+```
+
+---
+
+## javli instance delete
+
+Delete a named instance. By default this removes both the JAVLI metadata record and the instance's game directory on disk.
+
+### Syntax
+
+```bash
+javli instance delete <name> [--keep-files]
+```
+
+### Arguments and flags
+
+<ParamField path="name" type="string" required>
+  The name of the instance to delete.
+</ParamField>
+
+<ParamField query="--keep-files" type="boolean">
+  Remove the instance from JAVLI's registry but leave the game directory on disk. Useful if you want to preserve your world saves before permanently removing the instance.
+</ParamField>
+
+### Example
+
+```bash
+# Delete the instance and all its files
+javli instance delete old-world
+
+# Unregister the instance but keep the files
+javli instance delete old-world --keep-files
+```
+
+<Warning>
+  Deleting an instance without `--keep-files` permanently removes all saves, screenshots, and mods stored inside that instance's game directory.
+</Warning>
+
+---
+
+## javli instance set
+
+Update a configuration key on an existing instance. This is how you change the version, era, or source of an instance after creation.
+
+### Syntax
+
+```bash
+javli instance set <name> <key> <value>
+```
+
+### Arguments
+
+<ParamField path="name" type="string" required>
+  The name of the instance to modify.
+</ParamField>
+
+<ParamField path="key" type="string" required>
+  The configuration field to change. Must be one of:
+
+  - `version` — the Minecraft version ID
+  - `era` — the era string (e.g. `release`, `beta`)
+  - `source` — the version source (`auto`, `mojang`, or `omniarchive`)
+</ParamField>
+
+<ParamField path="value" type="string" required>
+  The new value for the specified key.
+</ParamField>
+
+### Example
+
+```bash
+# Upgrade an instance to a newer Minecraft version
+javli instance set survival version 1.21.4
+
+# Change the source for an instance
+javli instance set beta-world source omniarchive
+```

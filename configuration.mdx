@@ -1,0 +1,144 @@
+---
+title: "JAVLI Configuration and Environment Variables"
+sidebarTitle: "Configuration"
+description: "JAVLI is configured through command-line flags and environment variables. Override Java runtimes, tune memory, pin version sources, and manage the cache."
+---
+
+JAVLI has no configuration file. Every setting is expressed either as a command-line flag passed directly to the relevant command, or as an environment variable that persists across commands in the current shell session. This keeps the tool predictable: behaviour is explicit at the call site and there are no hidden global state files to reason about.
+
+## Environment Variables
+
+JAVLI reads two environment variables that let you substitute your own Java executable for the runtime JAVLI would otherwise select or download automatically.
+
+### `MCLI_JAVA`
+
+Overrides the Java executable used to launch **modern versions** (Release, Snapshot, and any version where JAVLI would otherwise select Java 17, 21, or 25).
+
+```bash
+export MCLI_JAVA=/usr/lib/jvm/java-21-openjdk/bin/java
+javli release 1.21.1
+```
+
+If the path set in `MCLI_JAVA` does not exist, JAVLI falls back to its normal managed-runtime resolution.
+
+### `MCLI_LEGACY_JAVA`
+
+Overrides the Java executable used to launch **legacy and historical versions** — builds that require Java 8, including Alpha, Beta, Classic, Indev, Infdev, and Pre-Classic.
+
+```bash
+export MCLI_LEGACY_JAVA=/usr/lib/jvm/java-8-openjdk/bin/java
+javli beta b1.7.3
+```
+
+<Note>
+  Both variables accept absolute paths to the `java` (or `java.exe` on Windows)
+  binary, not the JRE home directory.
+</Note>
+
+### When to use these variables
+
+<CardGroup cols={2}>
+  <Card title="System Java" icon="server">
+    You already have a compatible JDK installed and want JAVLI to use it
+    instead of downloading a managed runtime.
+  </Card>
+  <Card title="GraalVM / custom builds" icon="wrench">
+    You need a non-standard JVM (e.g. GraalVM Native Image host, custom JDK
+    build) for testing or performance profiling.
+  </Card>
+  <Card title="Air-gapped systems" icon="shield">
+    The machine has no internet access; you have pre-installed Java and need
+    JAVLI to use it without attempting an Adoptium download.
+  </Card>
+  <Card title="Multiple JDK versions" icon="layer-group">
+    You manage several JDKs via a version manager and want JAVLI to pick up
+    the currently active one.
+  </Card>
+</CardGroup>
+
+## Default Memory by Era
+
+JAVLI allocates heap memory based on the era of the version being launched. These defaults are applied automatically and require no configuration:
+
+| Era | Default heap |
+|---|---|
+| Pre-Classic | 256 MB |
+| Classic | 256 MB |
+| Indev | 256 MB |
+| Infdev | 256 MB |
+| Alpha | 512 MB |
+| Beta | 512 MB |
+| Release | 2 GB |
+| Snapshot | 2 GB |
+
+Older versions were designed for far less memory than modern Minecraft; the tiered defaults prevent classic-era builds from consuming gigabytes of heap unnecessarily.
+
+## Source Selection
+
+By default every version-related command uses `--source auto`, which queries both Mojang and Omniarchive and deduplicates the result. You can pin a specific source for any command:
+
+```bash
+# Pin to Mojang only
+javli versions --source mojang
+javli release 1.21.1 --source mojang
+
+# Pin to Omniarchive only
+javli versions --source omniarchive --historical
+javli classic c0.30 --source omniarchive
+```
+
+Source selection is always a per-command flag — there is no global default to change.
+
+## Cache Management
+
+JAVLI caches version manifests from Mojang and Omniarchive under `~/.javli/cache/`. The TTL is **1 hour** (3600 seconds). Within that window JAVLI serves the cached manifest without a network request.
+
+To force an immediate refresh before the TTL expires, delete the relevant file:
+
+```bash
+# Refresh the Mojang version manifest
+rm ~/.javli/cache/mojang-manifest.json
+
+# Refresh all cached manifests
+rm ~/.javli/cache/*.json
+```
+
+On Windows (PowerShell):
+
+```bash
+Remove-Item "$env:USERPROFILE\.javli\cache\*.json"
+```
+
+<Tip>
+  Individual version detail files (e.g. `mojang-version-1.21.1.json`) have a
+  30-day TTL because their contents do not change after a version is published.
+  You only need to clear those if you suspect corruption.
+</Tip>
+
+## Updating JAVLI
+
+The `javli update` command downloads the latest standalone binary for the current platform from the GitHub Releases page and replaces the running executable in place:
+
+```bash
+javli update
+```
+
+<Note>
+  `javli update` only works with standalone release binaries (the prebuilt
+  executables from GitHub Actions). If you installed JAVLI from source with
+  `pip install -e .`, update using `git pull` and `pip install -e .` instead.
+</Note>
+
+On Windows, JAVLI cannot overwrite its own running executable directly. It stages the new binary and schedules a detached batch script to swap the file after the current process exits.
+
+## Summary Reference
+
+| Setting | Mechanism | Example |
+|---|---|---|
+| Java override (modern) | `MCLI_JAVA` env var | `export MCLI_JAVA=/path/to/java` |
+| Java override (legacy) | `MCLI_LEGACY_JAVA` env var | `export MCLI_LEGACY_JAVA=/path/to/java` |
+| Version source | `--source` flag | `--source mojang` |
+| Era filter | `--type` flag | `--type beta` |
+| Historical only | `--historical` flag | `javli versions --historical` |
+| Manifest cache | Delete cache files | `rm ~/.javli/cache/*.json` |
+| Self-update | `javli update` | Updates the standalone binary |
