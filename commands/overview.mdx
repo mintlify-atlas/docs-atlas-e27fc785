@@ -1,7 +1,7 @@
 ---
-title: "JAVLI Command Reference Overview"
+title: "JAVLI Command Reference — All CLI Commands Overview"
 sidebarTitle: "Overview"
-description: "Complete reference for all JAVLI commands. Covers launch, account, Java, instance, mods, modpacks, servers, versions, and utility commands."
+description: "Complete reference for all JAVLI CLI commands. Covers launch, account, Java runtime, instance, mods, modpacks, servers, versions, and utility commands."
 ---
 
 JAVLI is a Python-based command-line Minecraft launcher that brings together modern and historical Minecraft versions, Microsoft account management, Java runtime installation, isolated game instances, modloaders, mods, modpacks, resource packs, shaders, and local server management under a single `javli` command. This page lists every top-level command available in JAVLI and links to the detailed reference page for each group.
@@ -12,22 +12,22 @@ JAVLI is a Python-based command-line Minecraft launcher that brings together mod
   <Card title="Launch" icon="rocket" href="/commands/launch">
     Launch any Minecraft version by era — `release`, `snapshot`, `beta`, `alpha`, `infdev`, `indev`, `classic`, `preclassic` — with optional modloader flags and the `random` command.
   </Card>
-  <Card title="account" icon="user" href="/commands/account">
+  <Card title="Account" icon="user" href="/commands/account">
     Log in with Microsoft, switch active accounts, refresh tokens, and remove saved accounts with `login` and `account`.
   </Card>
-  <Card title="java" icon="coffee" href="/commands/java">
+  <Card title="Java" icon="coffee" href="/commands/java">
     Install and manage Java runtimes (Java 8, 17, 21, 25) via Adoptium, list installed versions, and print executable paths.
   </Card>
-  <Card title="instance" icon="layer-group" href="/commands/instance">
+  <Card title="Instance" icon="layer-group" href="/commands/instance">
     Create, launch, clone, and delete isolated Minecraft instances, each with its own saves, mods, and configuration.
   </Card>
-  <Card title="mods / modpack / loader" icon="puzzle-piece" href="/commands/mods">
+  <Card title="Mods / Modpack / Loader" icon="puzzle-piece" href="/commands/mods">
     Search and install mods, modpacks, resource packs, shaders, and standalone modloaders from Modrinth.
   </Card>
-  <Card title="server" icon="server" href="/commands/server">
+  <Card title="Server" icon="server" href="/commands/server">
     Create and manage local vanilla or Paper Minecraft servers, control server lifecycle, accept the EULA, and edit `server.properties`.
   </Card>
-  <Card title="versions / search / info" icon="magnifying-glass" href="/commands/versions">
+  <Card title="Versions / Search / Info" icon="magnifying-glass" href="/commands/versions">
     Discover and inspect Minecraft versions by era, search by ID, view detailed metadata, and check version statistics.
   </Card>
 </CardGroup>
@@ -63,9 +63,9 @@ JAVLI is a Python-based command-line Minecraft launcher that brings together mod
 
 ## Data directory
 
-All JAVLI data lives under `~/.javli/`:
+All JAVLI data lives under `~/.mcli/`:
 
-```
+```text
 accounts.json
 assets/
 cache/

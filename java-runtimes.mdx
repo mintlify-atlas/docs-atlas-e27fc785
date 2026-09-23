@@ -4,7 +4,7 @@ sidebarTitle: "Java Runtimes"
 description: "JAVLI auto-installs the correct Java version for each Minecraft version via Eclipse Adoptium. Manage runtimes with javli java list, install, and path."
 ---
 
-JAVLI manages its own Java runtimes so you never need to manually install or switch JDKs when jumping between Minecraft versions. When a launch requires a Java version you don't have, JAVLI downloads and unpacks a JRE from the Eclipse Adoptium API, stores it under `~/.javli/runtimes/`, and uses it automatically from that point forward. You can also inspect, pre-install, or override runtimes at any time using the `javli java` subcommands.
+JAVLI manages its own Java runtimes so you never need to manually install or switch JDKs when jumping between Minecraft versions. When a launch requires a Java version you don't have, JAVLI downloads and unpacks a JRE from the Eclipse Adoptium API, stores it under `~/.mcli/runtimes/`, and uses it automatically from that point forward. You can also inspect, pre-install, or override runtimes at any time using the `javli java` subcommands.
 
 ## Supported Java Versions
 
@@ -24,14 +24,14 @@ The correct version is determined automatically from Mojang's version metadata (
 Managed runtimes are stored at:
 
 ```text
-~/.javli/runtimes/java-<major>/
+~/.mcli/runtimes/java-<major>/
 ```
 
 For example:
 
 ```text
-~/.javli/runtimes/java-8/
-~/.javli/runtimes/java-21/
+~/.mcli/runtimes/java-8/
+~/.mcli/runtimes/java-21/
 ```
 
 Each directory is a self-contained JRE — nothing is added to your system `PATH`.
@@ -57,8 +57,8 @@ This shows both your system Java (detected via `which java`) and every managed r
 
 ```text
 system  Java 21  /usr/bin/java
-managed java-8        /home/user/.javli/runtimes/java-8/bin/java
-managed java-21       /home/user/.javli/runtimes/java-21/bin/java
+managed java-8        /home/user/.mcli/runtimes/java-8/bin/java
+managed java-21       /home/user/.mcli/runtimes/java-21/bin/java
 ```
 
 ## Installing a Runtime
@@ -81,7 +81,7 @@ javli java path 21
 ```
 
 ```text
-/home/user/.javli/runtimes/java-21/bin/java
+/home/user/.mcli/runtimes/java-21/bin/java
 ```
 
 This is useful for scripts or for pointing other tools at JAVLI's managed runtime. If the requested major is not installed, the command exits with an error.
@@ -95,13 +95,13 @@ When JAVLI needs a Java executable for a launch, it checks in this order:
     If `MCLI_JAVA` (modern) or `MCLI_LEGACY_JAVA` (legacy/historical) is set and points to an existing file, that executable is used unconditionally.
   </Step>
   <Step title="Managed runtime">
-    If a managed runtime matching the required major version exists under `~/.javli/runtimes/java-<major>/`, JAVLI uses it.
+    If a managed runtime matching the required major version exists under `~/.mcli/runtimes/java-<major>/`, JAVLI uses it.
   </Step>
   <Step title="System Java">
     If the system `java` on `$PATH` reports the same major version, JAVLI uses it.
   </Step>
   <Step title="Auto-install">
-    If none of the above match, JAVLI downloads the correct version from Eclipse Adoptium, installs it to `~/.javli/runtimes/java-<major>/`, and uses it immediately.
+    If none of the above match, JAVLI downloads the correct version from Eclipse Adoptium, installs it to `~/.mcli/runtimes/java-<major>/`, and uses it immediately.
   </Step>
 </Steps>
 

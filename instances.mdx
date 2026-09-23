@@ -4,14 +4,14 @@ sidebarTitle: "Instances"
 description: "JAVLI instances isolate saves, mods, resource packs, and screenshots per profile. Create, launch, clone, and delete instances from the command line."
 ---
 
-Instances give each Minecraft profile its own completely isolated directory, so saves, mods, resource packs, shader packs, and screenshots never bleed between profiles. Every instance you create is stored under `~/.javli/instances/<name>/` and carries a small `instance.json` metadata file that records the version, era, and source it was created with. You manage instances entirely from the command line — no GUI needed.
+Instances give each Minecraft profile its own completely isolated directory, so saves, mods, resource packs, shader packs, and screenshots never bleed between profiles. Every instance you create is stored under `~/.mcli/instances/<name>/` and carries a small `instance.json` metadata file that records the version, era, and source it was created with. You manage instances entirely from the command line — no GUI needed.
 
 ## What an Instance Contains
 
 When you create an instance named `survival`, JAVLI creates the following layout:
 
 ```text
-~/.javli/instances/survival/
+~/.mcli/instances/survival/
 ├── instance.json          ← metadata: name, era, version, source, path
 ├── minecraft/             ← game data: worlds, options.txt, etc.
 ├── mods/                  ← mod JARs (Fabric/Forge/NeoForge/Quilt)
@@ -97,7 +97,7 @@ Output is JSON, matching the contents of `instance.json`:
   "era": "release",
   "version": "1.21.4",
   "source": "auto",
-  "path": "/home/user/.javli/instances/survival"
+  "path": "/home/user/.mcli/instances/survival"
 }
 ```
 
@@ -136,7 +136,7 @@ javli instance delete survival --keep-files
 ```
 
 <Warning>
-  Without `--keep-files`, the entire `~/.javli/instances/<name>/` directory is removed. This includes all world saves. Make a backup first if you need the data.
+  Without `--keep-files`, the entire `~/.mcli/instances/<name>/` directory is removed. This includes all world saves. Make a backup first if you need the data.
 </Warning>
 
 ## Editing Instance Settings
@@ -161,7 +161,7 @@ javli instance set survival version 1.21.5
 javli instance set retro source omniarchive
 ```
 
-Both the instance registry (`~/.javli/instances.json`) and the per-instance `instance.json` file are updated atomically.
+Both the instance registry (`~/.mcli/instances.json`) and the per-instance `instance.json` file are updated atomically.
 
 ## Command Reference
 

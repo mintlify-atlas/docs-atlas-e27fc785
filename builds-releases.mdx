@@ -1,10 +1,10 @@
 ---
 title: "JAVLI Builds, Releases, and Packaging"
 sidebarTitle: "Builds & Releases"
-description: "JAVLI ships prebuilt standalone binaries for six OS/architecture targets via GitHub Actions. Trigger builds by pushing a version tag or running the workflow manually."
+description: "JAVLI ships standalone binaries for six OS/arch targets via GitHub Actions. Trigger a build by pushing a version tag or running the workflow manually."
 ---
 
-JAVLI ships as standalone executable binaries — single files that bundle the Python interpreter and all Python dependencies. Users need only Java (which JAVLI manages automatically) and do not need to install Python, pip, or any other runtime. Binaries are produced by a GitHub Actions workflow (`Build JAVLI binaries`) that runs on every pushed commit and can also be triggered manually.
+JAVLI ships as standalone executable binaries — single files that bundle the Python interpreter and all Python dependencies. Users need only Java (which JAVLI manages automatically) and do not need to install Python, pip, or any other runtime. Binaries are produced by a GitHub Actions workflow (`Build JAVLI binaries`) that is triggered by pushing a version tag or by a manual workflow dispatch.
 
 ## Build Targets
 
@@ -120,7 +120,7 @@ Once you have a standalone JAVLI binary, you can update it to the latest GitHub 
 javli update
 ```
 
-`javli update` fetches the latest release from the GitHub API, downloads the appropriate archive for the current platform and architecture, extracts the new binary, and replaces the running executable in place.
+`javli update` fetches the latest release from the GitHub API (`https://api.github.com/repos/Hampter588/JAVLI/releases/latest`), downloads the appropriate archive for the current platform and architecture, extracts the new binary, and replaces the running executable in place.
 
 <Warning>
   `javli update` requires a standalone release binary. It will refuse to run
@@ -130,6 +130,13 @@ javli update
 
   For source installs, update with `git pull` and `pip install -e .`.
 </Warning>
+
+## What Is and Is Not Bundled
+
+The standalone JAVLI binary is built with PyInstaller using the `--onefile` flag. This means:
+
+- **Python and all Python dependencies** (including `requests`) are bundled inside the executable. No Python installation is required to run JAVLI.
+- **Java is NOT bundled.** JAVLI manages Java runtimes separately, downloading them from Adoptium on demand and storing them under `~/.mcli/runtimes/`. See [Java Runtimes](/java-runtimes) for details.
 
 ## Linux Package Formats
 

@@ -58,7 +58,7 @@ javli beta b1.7.3
 
 ## Default Memory by Era
 
-JAVLI allocates heap memory based on the era of the version being launched. These defaults are applied automatically and require no configuration:
+JAVLI allocates heap memory based on the era of the version being launched. These defaults are applied automatically when the version metadata does not already specify JVM heap flags:
 
 | Era | Default heap |
 |---|---|
@@ -91,22 +91,22 @@ Source selection is always a per-command flag — there is no global default to 
 
 ## Cache Management
 
-JAVLI caches version manifests from Mojang and Omniarchive under `~/.javli/cache/`. The TTL is **1 hour** (3600 seconds). Within that window JAVLI serves the cached manifest without a network request.
+JAVLI caches version manifests from Mojang and Omniarchive under `~/.mcli/cache/`. The TTL is **1 hour** (3600 seconds). Within that window JAVLI serves the cached manifest without a network request.
 
 To force an immediate refresh before the TTL expires, delete the relevant file:
 
 ```bash
 # Refresh the Mojang version manifest
-rm ~/.javli/cache/mojang-manifest.json
+rm ~/.mcli/cache/mojang-manifest.json
 
 # Refresh all cached manifests
-rm ~/.javli/cache/*.json
+rm ~/.mcli/cache/*.json
 ```
 
 On Windows (PowerShell):
 
-```bash
-Remove-Item "$env:USERPROFILE\.javli\cache\*.json"
+```powershell
+Remove-Item "$env:USERPROFILE\.mcli\cache\*.json"
 ```
 
 <Tip>
@@ -140,5 +140,5 @@ On Windows, JAVLI cannot overwrite its own running executable directly. It stage
 | Version source | `--source` flag | `--source mojang` |
 | Era filter | `--type` flag | `--type beta` |
 | Historical only | `--historical` flag | `javli versions --historical` |
-| Manifest cache | Delete cache files | `rm ~/.javli/cache/*.json` |
+| Manifest cache | Delete cache files | `rm ~/.mcli/cache/*.json` |
 | Self-update | `javli update` | Updates the standalone binary |

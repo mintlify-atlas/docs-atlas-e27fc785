@@ -4,7 +4,7 @@ sidebarTitle: "Launching"
 description: "Launch any Minecraft version from modern releases to pre-classic builds. Specify era, version, source, and optional modloader in a single command."
 ---
 
-JAVLI can launch every era of Minecraft — from the latest release all the way back to Pre-Classic — with a single command. You pick the era subcommand, pass the version string, and JAVLI resolves metadata, downloads libraries and assets, selects the right Java runtime, and starts the game. Asset downloads use 32 concurrent workers and are cached under `~/.javli/assets` so subsequent launches skip files already on disk.
+JAVLI can launch every era of Minecraft — from the latest release all the way back to Pre-Classic — with a single command. You pick the era subcommand, pass the version string, and JAVLI resolves metadata, downloads libraries and assets, selects the right Java runtime, and starts the game. Asset downloads use 32 concurrent workers and are cached under `~/.mcli/assets` so subsequent launches skip files already on disk.
 
 ## Era Subcommands
 
@@ -90,7 +90,7 @@ You can override this at any time by setting `-Xmx` yourself via a custom JVM ar
 
 ## Asset Downloads
 
-JAVLI downloads Minecraft assets from `https://resources.download.minecraft.net` and caches them under `~/.javli/assets`. On the first launch of a version, up to **32 parallel workers** fetch missing objects. Subsequent launches re-use the cache and skip already-downloaded files.
+JAVLI downloads Minecraft assets from `https://resources.download.minecraft.net` and caches them under `~/.mcli/assets`. On the first launch of a version, up to **32 parallel workers** fetch missing objects. Subsequent launches re-use the cache and skip already-downloaded files.
 
 ```text
 Assets: 0/2847 cached — downloading 2847 with 32 workers
@@ -174,5 +174,5 @@ javli classic c0.30
 ```
 
 <Tip>
-  If neither environment variable is set, JAVLI falls back to its managed runtime under `~/.javli/runtimes/`, then to the system `java` on `$PATH`, and finally auto-installs a managed runtime if nothing is found. See the **Java Runtimes** page for the full resolution order.
+  If neither environment variable is set, JAVLI falls back to its managed runtime under `~/.mcli/runtimes/`, then to the system `java` on `$PATH`, and finally auto-installs a managed runtime if nothing is found. See the **Java Runtimes** page for the full resolution order.
 </Tip>

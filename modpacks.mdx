@@ -1,7 +1,7 @@
 ---
-title: "Install Modrinth Modpacks with JAVLI"
+title: "Install Modrinth .mrpack Modpacks into JAVLI Instances"
 sidebarTitle: "Modpacks"
-description: "Install Modrinth .mrpack modpacks into a JAVLI instance. JAVLI extracts overrides and downloads all listed files automatically."
+description: "Install Modrinth .mrpack modpacks into a JAVLI instance. JAVLI extracts overrides, copies client files, and downloads all listed mod files automatically."
 ---
 
 JAVLI can install any Modrinth modpack in the `.mrpack` format directly from the command line. After pointing it at a project slug, JAVLI downloads the pack, extracts overrides, and fetches every listed file — no manual unzipping or file-copying required. The only prerequisite is that the target instance already exists.
@@ -97,7 +97,7 @@ javli modpack install fabulously-optimized --instance fo-instance
 
 On success, JAVLI prints the pack name and the Minecraft version recorded in `modrinth.index.json`:
 
-```
+```text
 Installed modpack: Fabulously Optimized
 Minecraft: 1.21.1
 ```

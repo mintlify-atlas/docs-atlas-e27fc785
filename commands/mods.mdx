@@ -1,7 +1,7 @@
 ---
-title: "javli mods / modpack / loader — Mod Commands"
-sidebarTitle: "mods"
-description: "Install mods, modpacks, resource packs, shaders, and modloaders with JAVLI. Covers mods, modpack, loader, resourcepack, and shader subcommands."
+title: "javli mods / modpack / loader — Mod Management Commands"
+sidebarTitle: "Mods"
+description: "Install mods, modpacks, resource packs, shaders, and modloaders with JAVLI. Covers mods, modpack, loader, resourcepack, and shader commands via Modrinth."
 ---
 
 JAVLI integrates with Modrinth to let you search, install, and remove mods, modpacks, resource packs, and shaders directly from the command line. The `javli loader` command installs a standalone modloader (Fabric, Forge, NeoForge, or Quilt) for a given Minecraft version without immediately launching the game. All mod and content installs are scoped to a named instance.
@@ -267,7 +267,7 @@ javli loader quilt 1.21.1
 
 ## javli resourcepack
 
-Search, install, list, and remove Modrinth resource packs for an instance.
+Search, install, list, and remove Modrinth resource packs for an instance. The `search` subcommand supports `--minecraft` and `--limit` filters. There is no `--loader` filter for resource packs.
 
 ### Syntax
 

@@ -1,10 +1,10 @@
 ---
-title: "javli server — Server Management Commands"
-sidebarTitle: "server"
-description: "Manage local Minecraft servers with javli server. Create vanilla or Paper servers, control lifecycle, accept EULA, and edit server.properties from the CLI."
+title: "javli server — Local Minecraft Server Management CLI"
+sidebarTitle: "Server"
+description: "Manage local Minecraft servers with javli server. Create vanilla or Paper servers, control lifecycle, accept the EULA, and edit server.properties via CLI."
 ---
 
-The `javli server` command lets you create and manage local Minecraft Java servers without leaving the terminal. JAVLI supports both the official vanilla server jar and the Paper high-performance server. It handles downloading the server artifact, managing a PID file for background process tracking, and reading or writing `server.properties` key-value pairs directly from the CLI. Server data is stored under `~/.javli/servers/<name>/`.
+The `javli server` command lets you create and manage local Minecraft Java servers without leaving the terminal. JAVLI supports both the official vanilla server jar and the Paper high-performance server. It handles downloading the server artifact, managing a PID file for background process tracking, and reading or writing `server.properties` key-value pairs directly from the CLI. Server data is stored under `~/.mcli/servers/<name>/`.
 
 <Warning>
   JAVLI never accepts Mojang's EULA automatically. After creating a server you must run `javli server eula <name>` before the server will start.
@@ -74,7 +74,7 @@ javli server list
 
 ### Example output
 
-```
+```text
 RUNNING  smp                vanilla  1.21.1
 STOPPED  paper-smp          paper    1.21.1
 STOPPED  classic-smp        vanilla  1.20.4

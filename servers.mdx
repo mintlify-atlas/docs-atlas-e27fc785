@@ -1,14 +1,14 @@
 ---
-title: "Run Minecraft Servers with JAVLI"
+title: "Manage Minecraft Java Servers from the Terminal with JAVLI"
 sidebarTitle: "Servers"
 description: "Create, start, stop, and manage vanilla and Paper Minecraft servers locally. JAVLI handles server JARs, EULA, Java selection, and process management."
 ---
 
-JAVLI can provision and manage Minecraft Java Edition servers directly from your terminal. It downloads the correct server JAR, sets up the directory layout, resolves the right Java runtime, and tracks process state — all under `~/.javli/servers/`. Both Mojang vanilla servers and PaperMC servers are supported, and every server gets its own isolated directory so you can run multiple versions side-by-side.
+JAVLI can provision and manage Minecraft Java Edition servers directly from your terminal. It downloads the correct server JAR, sets up the directory layout, resolves the right Java runtime, and tracks process state — all under `~/.mcli/servers/`. Both Mojang vanilla servers and PaperMC servers are supported, and every server gets its own isolated directory so you can run multiple versions side-by-side.
 
 ## Server storage layout
 
-Each server lives under `~/.javli/servers/<name>/` and contains the following files after creation and first start:
+Each server lives under `~/.mcli/servers/<name>/` and contains the following files after creation and first start:
 
 | File | Purpose |
 |---|---|
@@ -59,7 +59,11 @@ After creating a server, you **must** accept Mojang's End User Licence Agreement
 javli server eula <name>
 ```
 
-This command writes `eula=true` to `~/.javli/servers/<name>/eula.txt`. JAVLI requires this explicit step rather than accepting the EULA on your behalf because the agreement is a legal contract between you and Mojang. By running the command you confirm you have read and accepted the [Minecraft EULA](https://www.minecraft.net/en-us/eula). Attempting to start a server before accepting the EULA will produce an error.
+This command writes `eula=true` to `~/.mcli/servers/<name>/eula.txt`. JAVLI requires this explicit step rather than accepting the EULA on your behalf because the agreement is a legal contract between you and Mojang. By running the command you confirm you have read and accepted the [Minecraft EULA](https://www.minecraft.net/en-us/eula). Attempting to start a server before accepting the EULA produces the following error:
+
+```
+EULA is not accepted. Read Mojang's EULA, then run: mcli server eula <name>
+```
 
 ```bash
 javli server eula smp
@@ -179,7 +183,7 @@ Changes take effect the next time the server is started (or on a live reload if 
 javli server delete <name> [--keep-files]
 ```
 
-Removes the server from JAVLI's index and, by default, deletes the entire server directory including all world data. Pass `--keep-files` to deregister the server from JAVLI while leaving `~/.javli/servers/<name>/` on disk.
+Removes the server from JAVLI's index and, by default, deletes the entire server directory including all world data. Pass `--keep-files` to deregister the server from JAVLI while leaving `~/.mcli/servers/<name>/` on disk.
 
 ```bash
 # Remove everything
@@ -190,7 +194,7 @@ javli server delete test-server --keep-files
 ```
 
 <Warning>
-  You must stop a server before deleting it. If the server process is still running, `javli server delete` will refuse with an error: `Stop the server before deleting it.` Run `javli server stop <name>` first.
+  You must stop a server before deleting it. If the server process is still running, `javli server delete` will refuse with the error: `Stop the server before deleting it.` Run `javli server stop <name>` first.
 </Warning>
 
 ---
@@ -211,7 +215,7 @@ The steps below walk through creating a Paper server, accepting the EULA, starti
 
     ```
     Created paper server paper-smp (1.21.1)
-    /home/user/.javli/servers/paper-smp
+    /home/user/.mcli/servers/paper-smp
     EULA is NOT accepted automatically. After reading it, run:
       javli server eula paper-smp
     ```
@@ -234,7 +238,7 @@ The steps below walk through creating a Paper server, accepting the EULA, starti
     # Started paper-smp (PID 41092)
     ```
 
-    Server output is written to `~/.javli/servers/paper-smp/server.log`.
+    Server output is written to `~/.mcli/servers/paper-smp/server.log`.
   </Step>
 
   <Step title="Check the status">

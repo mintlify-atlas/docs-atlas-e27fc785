@@ -1,7 +1,7 @@
 ---
 title: "JAVLI Data Directory Layout and File Reference"
 sidebarTitle: "Data Directory"
-description: "All JAVLI data lives under ~/.javli/. Understand the directory structure: accounts, assets, cache, instances, libraries, runtimes, and servers."
+description: "All JAVLI data lives under ~/.mcli/. Understand the directory structure: accounts, assets, cache, instances, libraries, runtimes, and servers."
 ---
 
 JAVLI stores all of its persistent data — accounts, downloaded game files, cached manifests, instances, and managed Java runtimes — in a single directory under your home folder. Nothing is written elsewhere, so wiping or relocating the directory completely removes JAVLI's footprint without touching system files.
@@ -10,13 +10,13 @@ JAVLI stores all of its persistent data — accounts, downloaded game files, cac
 
 | Platform | Path |
 |---|---|
-| macOS / Linux | `~/.javli/` |
-| Windows | `%USERPROFILE%\.javli\` |
+| macOS / Linux | `~/.mcli/` |
+| Windows | `%USERPROFILE%\.mcli\` |
 
 ## Directory Tree
 
 ```text
-~/.javli/
+~/.mcli/
 ├── accounts.json        # Saved Microsoft accounts and refresh tokens
 ├── assets/              # Downloaded game assets (sounds, textures, etc.)
 ├── cache/               # Cached version manifests (1-hour TTL)
@@ -45,8 +45,8 @@ JAVLI stores all of its persistent data — accounts, downloaded game files, cac
     access to this file can impersonate your Microsoft account. Protect it with
     appropriate filesystem permissions and **never share its contents**.
 
-    On multi-user systems consider restricting the entire `~/.javli/` directory
-    to your own user: `chmod 700 ~/.javli`.
+    On multi-user systems consider restricting the entire `~/.mcli/` directory
+    to your own user: `chmod 700 ~/.mcli`.
   </Warning>
 
   Managed by `javli login`, `javli account use`, `javli account remove`, and
@@ -79,7 +79,7 @@ JAVLI stores all of its persistent data — accounts, downloaded game files, cac
   Delete files here to force a fresh fetch:
 
   ```bash
-  rm ~/.javli/cache/mojang-manifest.json
+  rm ~/.mcli/cache/mojang-manifest.json
   ```
 </Accordion>
 
@@ -160,8 +160,8 @@ JAVLI stores all of its persistent data — accounts, downloaded game files, cac
   **Protect `accounts.json`** — it contains Microsoft OAuth refresh tokens that
   grant access to your Minecraft account. On shared or multi-user machines:
 
-  - Restrict `~/.javli/` to owner-only access: `chmod 700 ~/.javli`
-  - Do not back up `~/.javli/` to shared or unencrypted storage without
+  - Restrict `~/.mcli/` to owner-only access: `chmod 700 ~/.mcli`
+  - Do not back up `~/.mcli/` to shared or unencrypted storage without
     excluding `accounts.json`
   - Use `javli account remove <alias>` or `javli account logout` to invalidate
     stored credentials when they are no longer needed
@@ -173,14 +173,14 @@ To remove specific data without uninstalling JAVLI:
 
 ```bash
 # Remove a single managed Java runtime
-rm -rf ~/.javli/runtimes/java-8
+rm -rf ~/.mcli/runtimes/java-8
 
 # Clear the version manifest cache (forces re-fetch on next command)
-rm ~/.javli/cache/*.json
+rm ~/.mcli/cache/*.json
 
 # Remove all downloaded assets (will be re-downloaded on next launch)
-rm -rf ~/.javli/assets
+rm -rf ~/.mcli/assets
 
 # Remove everything — full reset
-rm -rf ~/.javli
+rm -rf ~/.mcli
 ```

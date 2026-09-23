@@ -23,7 +23,7 @@ JAVLI uses Microsoft's device code OAuth flow to authenticate you with Minecraft
     **Microsoft → Xbox Live → XSTS → Minecraft Services**. It then verifies your entitlements and fetches your Minecraft Java profile (username + UUID).
   </Step>
   <Step title="Save the account">
-    The account — including the refresh token, Minecraft access token, and profile — is written to `~/.javli/accounts.json`. On every future launch, JAVLI refreshes the Minecraft token automatically.
+    The account — including the refresh token, Minecraft access token, and profile — is written to `~/.mcli/accounts.json`. On every future launch, JAVLI refreshes the Minecraft token automatically.
   </Step>
 </Steps>
 
@@ -94,7 +94,7 @@ Refreshing re-runs the Microsoft → Minecraft chain using the saved refresh tok
 javli account remove alt
 ```
 
-This deletes the account entry from `~/.javli/accounts.json`. If the removed account was active, JAVLI automatically promotes the next saved account to active (or clears the active account if none remain).
+This deletes the account entry from `~/.mcli/accounts.json`. If the removed account was active, JAVLI automatically promotes the next saved account to active (or clears the active account if none remain).
 
 ### Log out of the active account
 
@@ -133,9 +133,9 @@ javli account logout
 ## Security
 
 <Warning>
-  `~/.javli/accounts.json` contains Microsoft **refresh tokens** and Minecraft **access tokens**. Treat this file as sensitive — anyone with read access to it can authenticate as you.
+  `~/.mcli/accounts.json` contains Microsoft **refresh tokens** and Minecraft **access tokens**. Treat this file as sensitive — anyone with read access to it can authenticate as you.
 
   - Do not commit it to version control.
   - Do not share it or copy it to untrusted machines.
-  - Restrict file permissions: `chmod 600 ~/.javli/accounts.json`
+  - Restrict file permissions: `chmod 600 ~/.mcli/accounts.json`
 </Warning>

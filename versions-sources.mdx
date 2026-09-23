@@ -100,7 +100,7 @@ javli info b1.7.3
 javli info c0.30 --source omniarchive
 ```
 
-`info` fetches full version metadata and prints it as formatted JSON. The output object includes:
+`info` fetches full version metadata and prints it as formatted JSON. The `--source` flag is accepted but defaults to `auto`. The output object includes:
 
 ```json
 {
@@ -181,14 +181,14 @@ Each entry carries only the fields that Omniarchive can provide: the version ID 
 
 ## Manifest Caching
 
-JAVLI caches fetched manifests under `~/.javli/cache/` with a **1-hour TTL** (3600 seconds). After the TTL expires the next command that queries that source will re-fetch and overwrite the cached file. To force an immediate refresh before the TTL elapses, delete the relevant cache file:
+JAVLI caches fetched manifests under `~/.mcli/cache/` with a **1-hour TTL** (3600 seconds). After the TTL expires the next command that queries that source will re-fetch and overwrite the cached file. To force an immediate refresh before the TTL elapses, delete the relevant cache file:
 
 ```bash
 # Force Mojang manifest refresh
-rm ~/.javli/cache/mojang-manifest.json
+rm ~/.mcli/cache/mojang-manifest.json
 
 # Force all cached manifests to refresh
-rm ~/.javli/cache/*.json
+rm ~/.mcli/cache/*.json
 ```
 
 <Tip>

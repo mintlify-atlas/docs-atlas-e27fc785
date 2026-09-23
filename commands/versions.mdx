@@ -1,7 +1,7 @@
 ---
-title: "javli versions / search / info — Version Commands"
-sidebarTitle: "versions"
-description: "Discover and inspect Minecraft versions with JAVLI. List by era, search by ID, and get detailed metadata including Java requirements and download links."
+title: "javli versions / search / info — Version Discovery Commands"
+sidebarTitle: "Versions"
+description: "Discover Minecraft versions with JAVLI. List by era, search by ID, and view JSON metadata with Java version, main class, asset index, and download keys."
 ---
 
 JAVLI's version discovery commands let you browse, search, and inspect the full Minecraft version catalog sourced from Mojang and Omniarchive. Use `javli versions` to list and filter the catalog, `javli search` to find a specific version by keyword, `javli info` to get detailed JSON metadata for one version, `javli stats` to see version counts by era and source, and `javli update` to upgrade the JAVLI binary itself.
@@ -45,7 +45,7 @@ javli versions --source omniarchive --type classic --historical
 
 ### Example output
 
-```
+```text
 VERSION                      ERA          SOURCE       RELEASED
 ------------------------------------------------------------------------------
 1.21.1                       release      mojang       2024-08-08T13:19:46+00:00
@@ -219,7 +219,7 @@ javli stats --source omniarchive
 
 ### Example output
 
-```
+```text
 Total: 847
 By source:
   mojang         650
@@ -239,7 +239,7 @@ By era:
 
 ## javli update
 
-Update the JAVLI standalone binary by downloading the latest release from GitHub Releases. This command only applies when running JAVLI as a packaged executable, not when running from source.
+Update the JAVLI standalone binary by downloading the latest release from GitHub Releases. This command only applies when running JAVLI as a packaged executable, not when running from source. It takes no arguments.
 
 ### Syntax
 

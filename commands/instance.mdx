@@ -1,12 +1,12 @@
 ---
-title: "javli instance — Instance Management Commands"
-sidebarTitle: "instance"
-description: "Create, launch, clone, and delete isolated Minecraft instances with javli instance. Each instance has separate saves, mods, and configuration."
+title: "javli instance — Minecraft Instance Management Commands"
+sidebarTitle: "Instance"
+description: "Create, launch, clone, and delete isolated Minecraft instances with javli instance. Each instance keeps separate saves, mods, and configuration on disk."
 ---
 
 Instances give each Minecraft setup its own isolated directory for saves, settings, configuration files, mods, resource packs, and screenshots. This means you can keep a vanilla survival world, a modded Fabric profile, and a historical Beta build completely separate on the same machine. The `javli instance` command handles the full lifecycle: create, list, inspect, launch, clone, configure, and delete.
 
-Instance data is stored under `~/.javli/instances/<name>/`.
+Instance data is stored under `~/.mcli/instances/<name>/`.
 
 ---
 
@@ -69,7 +69,7 @@ javli instance list
 
 ### Example output
 
-```
+```text
 survival             release    1.21.1               mojang
 beta-world           beta       b1.7.3               omniarchive
 classic-test         classic    c0.30                omniarchive

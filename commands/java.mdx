@@ -1,12 +1,12 @@
 ---
-title: "javli java — Java Runtime Commands"
-sidebarTitle: "java"
-description: "Manage Java runtimes with javli java. Install Java 8, 17, 21, or 25 via Adoptium, list installed versions, and print executable paths."
+title: "javli java — Java Runtime Install and Path Commands"
+sidebarTitle: "Java"
+description: "Manage Java runtimes with javli java. Install Java 8, 17, 21, or 25 from Adoptium, list managed runtimes, print paths, and override via MCLI_JAVA env vars."
 ---
 
 JAVLI can automatically select the correct Java runtime for each Minecraft version using metadata embedded in the version manifest. The `javli java` command lets you install managed Java runtimes from Adoptium, list what is already available on your system, and print the path to a managed executable so you can use it in scripts or other tools.
 
-Managed runtimes are stored under `~/.javli/runtimes/` and are entirely separate from any system-wide Java installation.
+Managed runtimes are stored under `~/.mcli/runtimes/` and are entirely separate from any system-wide Java installation.
 
 ---
 
@@ -22,10 +22,10 @@ javli java list
 
 ### Example output
 
-```
+```text
 system  Java 21  /usr/lib/jvm/java-21-openjdk-amd64/bin/java
-managed java-8   /home/user/.javli/runtimes/java-8/bin/java
-managed java-17  /home/user/.javli/runtimes/java-17/bin/java
+managed java-8   /home/user/.mcli/runtimes/java-8/bin/java
+managed java-17  /home/user/.mcli/runtimes/java-17/bin/java
 ```
 
 <Tip>
@@ -87,7 +87,7 @@ javli java path <major>
 ```bash
 # Print the path to the managed Java 17 executable
 javli java path 17
-# Output: /home/user/.javli/runtimes/java-17/bin/java
+# Output: /home/user/.mcli/runtimes/java-17/bin/java
 
 # Use in a script
 JAVA_BIN=$(javli java path 21)
@@ -115,7 +115,7 @@ JAVLI respects two environment variables that let you override the Java executab
 </ParamField>
 
 <ParamField query="MCLI_LEGACY_JAVA" type="string">
-  Path to a Java executable that JAVLI should use for **legacy** (pre-1.17) Minecraft versions instead of the auto-selected runtime. Set this if you have a custom Java 8 build you want to use for older versions.
+  Path to a Java executable that JAVLI should use for **legacy** Minecraft versions instead of the auto-selected runtime. Set this if you have a custom Java 8 build you want to use for older versions.
 
   ```bash
   MCLI_LEGACY_JAVA=/opt/java8/bin/java javli beta b1.7.3

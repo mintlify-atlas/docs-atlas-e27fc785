@@ -10,8 +10,8 @@ JAVLI provides first-class commands for managing both resource packs and shaders
 
 | Content type | Instance path |
 |---|---|
-| Resource packs | `~/.javli/instances/<instance>/minecraft/resourcepacks/` |
-| Shaders | `~/.javli/instances/<instance>/minecraft/shaderpacks/` |
+| Resource packs | `~/.mcli/instances/<instance>/minecraft/resourcepacks/` |
+| Shaders | `~/.mcli/instances/<instance>/minecraft/shaderpacks/` |
 
 Both directories are picked up natively by Minecraft (and shader-capable modloaders such as Iris or Optifine) on the next game launch.
 
@@ -54,7 +54,7 @@ Both directories are picked up natively by Minecraft (and shader-capable modload
     javli resourcepack install faithful --instance survival
     ```
 
-    JAVLI selects the newest compatible version (preferring `release`, then `beta`/`alpha`) and downloads it into `~/.javli/instances/survival/minecraft/resourcepacks/`.
+    JAVLI selects the newest compatible version (preferring `release`, then `beta`/`alpha`) and downloads it into `~/.mcli/instances/survival/minecraft/resourcepacks/`.
 
     ---
 
@@ -118,7 +118,7 @@ Both directories are picked up natively by Minecraft (and shader-capable modload
     javli shader install complementary-reimagined --instance survival
     ```
 
-    The shader archive is downloaded into `~/.javli/instances/survival/minecraft/shaderpacks/`.
+    The shader archive is downloaded into `~/.mcli/instances/survival/minecraft/shaderpacks/`.
 
     ---
 

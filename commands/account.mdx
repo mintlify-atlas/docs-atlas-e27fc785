@@ -1,13 +1,13 @@
 ---
-title: "javli login / account — Account Commands"
-sidebarTitle: "account"
-description: "Manage Microsoft accounts with javli login and javli account. Log in, switch active accounts, refresh tokens, and remove accounts."
+title: "javli login / account — Microsoft Account Commands"
+sidebarTitle: "Account"
+description: "Manage Microsoft accounts with javli login and javli account. Log in, list saved accounts, switch the active account, refresh tokens, and remove accounts."
 ---
 
-JAVLI uses Microsoft OAuth to authenticate with Minecraft. The `javli login` command opens a browser-based login flow and saves a named account entry under `~/.javli/accounts.json`. The `javli account` command lets you list saved accounts, switch which one is active, refresh expired tokens, and remove accounts you no longer need.
+JAVLI uses Microsoft OAuth to authenticate with Minecraft. The `javli login` command opens a browser-based login flow and saves a named account entry under `~/.mcli/accounts.json`. The `javli account` command lets you list saved accounts, switch which one is active, refresh expired tokens, and remove accounts you no longer need.
 
 <Warning>
-  `~/.javli/accounts.json` may contain Microsoft authentication refresh tokens. Treat this file as sensitive and never share it.
+  `~/.mcli/accounts.json` may contain Microsoft authentication refresh tokens. Treat this file as sensitive and never share it.
 </Warning>
 
 ---
@@ -55,7 +55,7 @@ javli account list
 
 **Example output:**
 
-```
+```text
 * main               Steve               xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   alt                Alex                yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy
 ```
